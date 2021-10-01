@@ -1,8 +1,9 @@
 package main
 
 import (
-	"bufio"
+	"bytes"
 	"compress/gzip"
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -11,6 +12,11 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go/aws"
 )
 
 var ACTIONS = [...]string{"ACCEPT", "REJECT"}
@@ -73,37 +79,36 @@ func newFlow() flow {
 	}
 	return f
 }
+func generateRandomKey() string {
+	return fmt.Sprintf("vpcflow_%19d_%3d.gz", time.Now().UnixNano(), rand.Intn(1000))
+}
 
-func generateFile(workerNum int, fChan <-chan int, rChan chan<- int) {
+func generateFile(workerNum int, uploader *manager.Uploader, bucket string, fChan <-chan int, rChan chan<- int) {
 	for fileNum := range fChan {
-		path, err := os.Getwd()
-		if err != nil {
-			log.Printf("Error getting current directory: %v", err)
-			rChan <- 1
-			continue
-		}
-		fp, err := os.CreateTemp(path, "vpcflowlogs_*.gz")
-		if err != nil {
-			log.Printf("Error creating temp file: %v", err)
-			rChan <- 1
-			continue
-		}
+		key := generateRandomKey()
+		var buf bytes.Buffer
 
-		gw := gzip.NewWriter(fp)
-		bw := bufio.NewWriter(gw)
+		gw := gzip.NewWriter(&buf)
 
 		lines := COUNTS[rand.Intn(len(COUNTS))]
 		for i := 0; i < lines; i++ {
 			f := newFlow()
-			_, err := bw.WriteString(f.String())
+			_, err := gw.Write([]byte(f.String()))
 			if err != nil {
 				log.Printf("Error writing string: %v", err)
 				continue
 			}
 		}
-		bw.Flush()
 		gw.Close()
-		fp.Close()
+
+		_, err := uploader.Upload(context.TODO(), &s3.PutObjectInput{
+			Bucket: aws.String(bucket),
+			Key:    aws.String(key),
+			Body:   &buf,
+		})
+		if err != nil {
+			log.Printf("Error uploading to S3: %v", err)
+		}
 		rChan <- fileNum
 	}
 
@@ -112,23 +117,46 @@ func generateFile(workerNum int, fChan <-chan int, rChan chan<- int) {
 func main() {
 	var numFiles int
 	var numWorkers int
+	var bucket string
+	var region string
+	var duration time.Duration
+
 	flag.IntVar(&numFiles, "n", 1, "number of files to generate")
 	flag.IntVar(&numWorkers, "w", 1, "number of workers")
+	flag.StringVar(&bucket, "b", "", "AWS S3 bucket to write to (required)")
+	flag.StringVar(&region, "r", "", "AWS region (required)")
+	flag.DurationVar(&duration, "d", 60*time.Second, "Duration between generating files")
 	flag.Parse()
+
+	if bucket == "" || region == "" {
+		fmt.Fprintf(os.Stderr, "bucket and region are required\n")
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	uploader := manager.NewUploader(s3.NewFromConfig(cfg))
 
 	rand.Seed(time.Now().UnixNano())
 
 	fChan := make(chan int, numFiles)
 	rChan := make(chan int, numFiles)
 
-	for i := 0; i < numWorkers; i++ {
-		go generateFile(i, fChan, rChan)
-	}
+	ticker := time.NewTicker(duration)
+	for ; true; <-ticker.C {
+		for i := 0; i < numWorkers; i++ {
+			go generateFile(i, uploader, bucket, fChan, rChan)
+		}
 
-	for i := 0; i < numFiles; i++ {
-		fChan <- i
-	}
-	for i := 0; i < numFiles; i++ {
-		<-rChan
+		for i := 0; i < numFiles; i++ {
+			fChan <- i
+		}
+		for i := 0; i < numFiles; i++ {
+			<-rChan
+		}
 	}
 }
