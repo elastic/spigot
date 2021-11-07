@@ -1,0 +1,15 @@
+---
+workers: 2
+output_file:
+  enabled: false
+  directory: "/var/tmp"
+  pattern: "vpcflow_*.log"
+  delimiter: "\n"
+output_s3:
+  enabled: false
+  bucket: "leh-test-spigot"
+  region: "us-west-2"
+  delimiter: "\n"
+  prefix: "vpcflow"
+generator_vpcflow:
+  enabled: true
