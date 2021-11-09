@@ -1,9 +1,16 @@
 ---
 workers: 2
-output_file:
+records: 3
+interval: 10s
+generator_asa:
+  enabled: true
+  include_timestamp: true
+generator_vpcflow:
   enabled: false
+output_file:
+  enabled: true
   directory: "/var/tmp"
-  pattern: "vpcflow_*.log"
+  pattern: "spigot_*.log"
   delimiter: "\n"
 output_s3:
   enabled: false
@@ -11,5 +18,13 @@ output_s3:
   region: "us-west-2"
   delimiter: "\n"
   prefix: "vpcflow"
-generator_vpcflow:
-  enabled: true
+output_syslog:
+  enabled: false
+  facility: "LOG_LOCAL0"
+  severity: "LOG_INFO"
+  tag: "test"
+  network: "udp"
+  host: localhost
+  port: "1234"
+
+

@@ -8,10 +8,12 @@ import (
 	"github.com/elastic/go-ucfg"
 	"github.com/elastic/go-ucfg/yaml"
 	"github.com/leehinman/spigot/internal/generator"
+	"github.com/leehinman/spigot/internal/generator/asa"
 	"github.com/leehinman/spigot/internal/generator/vpcflow"
 	"github.com/leehinman/spigot/internal/output"
 	"github.com/leehinman/spigot/internal/output/file"
 	"github.com/leehinman/spigot/internal/output/s3"
+	"github.com/leehinman/spigot/internal/output/syslog"
 )
 
 type Config struct {
@@ -20,6 +22,8 @@ type Config struct {
 	Interval      time.Duration  `config:"interval"`
 	FileConfig    file.Config    `config:"output_file"`
 	S3Config      s3.Config      `config:"output_s3"`
+	SyslogConfig  syslog.Config  `config:"output_syslog"`
+	AsaConfig     asa.Config     `config:"generator_asa"`
 	VpcflowConfig vpcflow.Config `config:"generator_vpcflow"`
 }
 
@@ -52,12 +56,19 @@ func outputFromConfig(conf Config) (out output.Output, err error) {
 	if conf.S3Config.Enabled {
 		return s3.New(conf.S3Config)
 	}
+	if conf.SyslogConfig.Enabled {
+		return syslog.New(conf.SyslogConfig)
+	}
+	fmt.Printf("%+v", conf)
 	return nil, fmt.Errorf("No output configured")
 }
 
 func generatorFromConfig(conf Config) (gen generator.Generator, err error) {
 	if conf.VpcflowConfig.Enabled {
 		return vpcflow.New()
+	}
+	if conf.AsaConfig.Enabled {
+		return asa.New(conf.AsaConfig)
 	}
 	return nil, fmt.Errorf("No generator configured")
 }
