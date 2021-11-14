@@ -6,12 +6,13 @@ import (
 	"math/rand"
 	"net"
 	"strconv"
+	"strings"
 	"text/template"
 	"time"
 )
 
 var (
-	Asa106023    = "{{if .IncludeTimestamp}}{{.Timestamp.Format \"Jan 02 2006 03:04:05\"}}: {{end}}%ASA-4-106023: Deny {{.Protocol}} src {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} dst {{.DstInt}}:{{.DstAddr}}/{{.DstPort}} type {{.Type}} code {{.Code}} by {{.AccessGroup}} \"{{.AclId}}\" [0x8ed66b60, 0xf8852875]"
+	Asa106023    = "{{if .IncludeTimestamp}}{{.Timestamp.Format \"Jan 02 2006 03:04:05\"}}: {{end}}%ASA-4-106023: Deny {{.Protocol | ToLower}} src {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} dst {{.DstInt}}:{{.DstAddr}}/{{.DstPort}} type {{.Type}} code {{.Code}} by {{.AccessGroup | ToLower}} \"{{.AclId}}\" [0x8ed66b60, 0xf8852875]"
 	Asa302013    = "{{if .IncludeTimestamp}}{{.Timestamp.Format \"Jan 02 2006 03:04:05\"}}: {{end}}%ASA-6-302013: Built {{.Direction}} TCP connection {{.ConnectionId}} for {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} ({{.Map1Addr}}/{{.Map1Port}}) to {{.DstInt}}:{{.DstAddr}}/{{.DstPort}} ({{.Map2Addr}}/{{.Map2Port}})"
 	Asa302014    = "{{if .IncludeTimestamp}}{{.Timestamp.Format \"Jan 02 2006 03:04:05\"}}: {{end}}%ASA-6-302014: Teardown TCP connection {{.ConnectionId}} for {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} to {{.DstInt}}:{{.DstAddr}}/{{.DstPort}} duration {{.Duration}} bytes {{.Bytes}} {{.Reason}}"
 	Asa305011    = "{{if .IncludeTimestamp}}{{.Timestamp.Format \"Jan 02 2006 03:04:05\"}}: {{end}}%ASA-6-305011: Built {{.TranslationType}} {{.Protocol}} translation from {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} to {{.DstInt}}:{{.DstAddr}}/{{.DstPort}}"
@@ -20,6 +21,10 @@ var (
 		Asa302013,
 		Asa302014,
 		Asa305011,
+	}
+	FuncMap = template.FuncMap{
+		"ToLower": strings.ToLower,
+		"ToUpper": strings.ToUpper,
 	}
 	Directions       = [...]string{"inbound", "outbound"}
 	Protocols        = [...]string{"TCP", "UDP"}
@@ -100,12 +105,13 @@ func New(c Config) (a *Asa, err error) {
 		SrcUser:          "SrcUser",
 		DstInt:           "DstInt",
 		DstUser:          "DstUser",
-		AccessGroup:      "AccessGroup",
+		AccessGroup:      "Access-Group",
 		AclId:            "AclId",
 		IncludeTimestamp: c.IncludeTimestamp,
 	}
+
 	for i, v := range MsgTemplates {
-		t, err := template.New(strconv.Itoa(i)).Parse(v)
+		t, err := template.New(strconv.Itoa(i)).Funcs(FuncMap).Parse(v)
 		if err != nil {
 			return nil, err
 		}
