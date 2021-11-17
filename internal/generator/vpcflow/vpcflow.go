@@ -49,8 +49,8 @@ func (v *Vpcflow) Next() ([]byte, error) {
 	v.Protocol = rand.Intn(256)
 	v.Packets = rand.Intn(1048576)
 	v.Bytes = v.Packets * 1500
-	v.Start = time.Now().Unix() - int64(rand.Intn(60))
-	v.End = v.Start + int64(v.Bytes/800)
+	v.End = time.Now().Unix()
+	v.Start = v.End - int64(rand.Intn(60))
 	v.Action = ACTIONS[rand.Intn(2)]
 	if v.Packets == 0 {
 		v.LogStatus = STATUSES[2]
