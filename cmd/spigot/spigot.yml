@@ -1,30 +1,30 @@
 ---
-workers: 2
-records: 3
-interval: 10s
-generator_asa:
-  enabled: true
-  include_timestamp: true
-generator_vpcflow:
-  enabled: false
-output_file:
-  enabled: true
-  directory: "/var/tmp"
-  pattern: "spigot_*.log"
-  delimiter: "\n"
-output_s3:
-  enabled: false
-  bucket: "leh-test-spigot"
-  region: "us-west-2"
-  delimiter: "\n"
-  prefix: "vpcflow"
-output_syslog:
-  enabled: false
-  facility: "LOG_LOCAL0"
-  severity: "LOG_INFO"
-  tag: "test"
-  network: "udp"
-  host: localhost
-  port: "1234"
-
-
+workers: 1
+records: 1024
+interval: 5s
+generators:
+  - type: asa
+    enabled: false
+    include_timestamp: false
+  - type: vpcflow
+    enabled: false
+outputs:
+  - type: file
+    enabled: false
+    directory: "/var/tmp"
+    pattern: "spigot_*.log"
+    delimiter: "\n"
+  - type: s3
+    enabled: false
+    bucket: "leh-test-spigot"
+    region: "us-west-2"
+    delimiter: "\n"
+    prefix: "vpcflow"
+  - type: syslog
+    enabled: false
+    facility: "LOG_LOCAL0"
+    severity: "LOG_INFO"
+    tag: "test"
+    network: "udp"
+    host: 127.0.0.1
+    port: "9001"

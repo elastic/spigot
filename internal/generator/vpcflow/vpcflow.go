@@ -6,6 +6,8 @@ import (
 	"net"
 	"text/template"
 	"time"
+
+	"github.com/elastic/go-ucfg"
 )
 
 var ACTIONS = [...]string{"ACCEPT", "REJECT"}
@@ -29,7 +31,11 @@ type Vpcflow struct {
 	Template  *template.Template
 }
 
-func New() (v *Vpcflow, err error) {
+func New(cfg *ucfg.Config) (v *Vpcflow, err error) {
+	c := defaultConfig()
+	if err := cfg.Unpack(&c); err != nil {
+		return nil, err
+	}
 	v = &Vpcflow{}
 	t, err := template.New("vpcflow").Parse("2 123456789010 eni-1235b8ca123456789 {{.SrcAddr}} {{.DstAddr}} {{.SrcPort}} {{.DstPort}} {{.Protocol}} {{.Packets}} {{.Bytes}} {{.Start}} {{.End}} {{.Action}} {{.LogStatus}}")
 	if err != nil {

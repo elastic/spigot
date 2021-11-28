@@ -1,5 +1,12 @@
 package vpcflow
 
-type Config struct {
-	Enabled bool `config:"enabled"`
+type config struct {
+	Type    string `config:"type"`
+	Enabled bool   `config:"enabled"`
+}
+
+func defaultConfig() config {
+	return config{
+		Type: "vpcflow",
+	}
 }

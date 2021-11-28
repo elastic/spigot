@@ -5,6 +5,7 @@ import (
 	"net"
 	"testing"
 
+	"github.com/elastic/go-ucfg"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -34,7 +35,11 @@ func TestNext(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		v, err := New()
+		c := ucfg.MustNewFrom(map[string]interface{}{
+			"Enabled": true,
+			"Type":    "vpcflow",
+		})
+		v, err := New(c)
 		assert.Nil(t, err)
 		got, err := v.Next()
 		assert.Nil(t, err)
@@ -52,7 +57,11 @@ func TestNext(t *testing.T) {
 }
 
 func TestTemplate(t *testing.T) {
-	v, err := New()
+	c := ucfg.MustNewFrom(map[string]interface{}{
+		"Enabled": true,
+		"Type":    "vpcflow",
+	})
+	v, err := New(c)
 	assert.Nil(t, err)
 	v.SrcAddr = net.ParseIP("66.4.203.154")
 	v.DstAddr = net.ParseIP("30.52.197.240")

@@ -3,6 +3,8 @@ package file
 import (
 	"io"
 	"os"
+
+	"github.com/elastic/go-ucfg"
 )
 
 type FileOutput struct {
@@ -10,7 +12,11 @@ type FileOutput struct {
 	pWC       io.WriteCloser
 }
 
-func New(c Config) (f *FileOutput, err error) {
+func New(cfg *ucfg.Config) (f *FileOutput, err error) {
+	c := defaultConfig()
+	if err := cfg.Unpack(&c); err != nil {
+		return nil, err
+	}
 	pWC, err := os.CreateTemp(c.Directory, c.Pattern)
 	if err != nil {
 		return nil, err

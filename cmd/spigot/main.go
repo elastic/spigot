@@ -17,14 +17,11 @@ import (
 )
 
 type Config struct {
-	Workers       int            `config:"workers"`
-	Records       int            `config:"records"`
-	Interval      time.Duration  `config:"interval"`
-	FileConfig    file.Config    `config:"output_file"`
-	S3Config      s3.Config      `config:"output_s3"`
-	SyslogConfig  syslog.Config  `config:"output_syslog"`
-	AsaConfig     asa.Config     `config:"generator_asa"`
-	VpcflowConfig vpcflow.Config `config:"generator_vpcflow"`
+	Workers    int            `config:"workers"`
+	Records    int            `config:"records"`
+	Interval   time.Duration  `config:"interval"`
+	Outputs    []*ucfg.Config `config:"outputs" validate:"required"`
+	Generators []*ucfg.Config `config:"generators" validate: "required"`
 }
 
 var (
@@ -49,26 +46,46 @@ func run(gen generator.Generator, out output.Output, lines int) {
 	out.Close()
 }
 
-func outputFromConfig(conf Config) (out output.Output, err error) {
-	if conf.FileConfig.Enabled {
-		return file.New(conf.FileConfig)
+func outputFromConfig(cfgs []*ucfg.Config) (out output.Output, err error) {
+	for _, cfg := range cfgs {
+		c := output.OutputConfig{}
+		if err := cfg.Unpack(&c); err != nil {
+			return nil, err
+		}
+		if !c.Enabled {
+			continue
+		}
+		switch c.Type {
+		case "file":
+			return file.New(cfg)
+		case "s3":
+			return s3.New(cfg)
+		case "syslog":
+			return syslog.New(cfg)
+		default:
+			return nil, fmt.Errorf("Unknown output: %s", c.Type)
+		}
 	}
-	if conf.S3Config.Enabled {
-		return s3.New(conf.S3Config)
-	}
-	if conf.SyslogConfig.Enabled {
-		return syslog.New(conf.SyslogConfig)
-	}
-	fmt.Printf("%+v", conf)
 	return nil, fmt.Errorf("No output configured")
 }
 
-func generatorFromConfig(conf Config) (gen generator.Generator, err error) {
-	if conf.VpcflowConfig.Enabled {
-		return vpcflow.New()
-	}
-	if conf.AsaConfig.Enabled {
-		return asa.New(conf.AsaConfig)
+func generatorFromConfig(cfgs []*ucfg.Config) (gen generator.Generator, err error) {
+	for _, cfg := range cfgs {
+		c := generator.GeneratorConfig{}
+		if err := cfg.Unpack(&c); err != nil {
+			return nil, err
+		}
+		if !c.Enabled {
+			continue
+		}
+		switch c.Type {
+		case "vpcflow":
+			return vpcflow.New(cfg)
+		case "asa":
+			return asa.New(cfg)
+		default:
+			return nil, fmt.Errorf("Unknown generator: %s", c.Type)
+		}
 	}
 	return nil, fmt.Errorf("No generator configured")
 }
@@ -91,11 +108,11 @@ func main() {
 		var wg sync.WaitGroup
 
 		for i := 0; i < spigotConfig.Workers; i++ {
-			out, err := outputFromConfig(spigotConfig)
+			out, err := outputFromConfig(spigotConfig.Outputs)
 			if err != nil {
 				panic(err)
 			}
-			gen, err := generatorFromConfig(spigotConfig)
+			gen, err := generatorFromConfig(spigotConfig.Generators)
 			if err != nil {
 				panic(err)
 			}

@@ -1,6 +1,7 @@
 package syslog
 
-type Config struct {
+type config struct {
+	Type     string `config:"type"`
 	Enabled  bool   `config:"enabled"`
 	Facility string `config:"facility"`
 	Severity string `config:"severity"`
@@ -8,4 +9,10 @@ type Config struct {
 	Network  string `config:"network"`
 	Host     string `config:"host"`
 	Port     string `config:"port"`
+}
+
+func defaultConfig() config {
+	return config{
+		Type: "syslog",
+	}
 }

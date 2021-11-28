@@ -5,6 +5,7 @@ import (
 	"testing"
 	"text/template"
 
+	"github.com/elastic/go-ucfg"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,8 +21,10 @@ func TestNext(t *testing.T) {
 	}
 	for name, tc := range tests {
 		rand.Seed(1)
-		config := Config{IncludeTimestamp: false}
-		a, err := New(config)
+		c := ucfg.MustNewFrom(map[string]interface{}{
+			"IncludeTimestamp": false,
+		})
+		a, err := New(c)
 		assert.Nil(t, err)
 		templ, err := template.New(name).Funcs(FuncMap).Parse(tc.template)
 		assert.Nil(t, err)

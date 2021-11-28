@@ -4,13 +4,19 @@ import (
 	"io"
 	"log/syslog"
 	"net"
+
+	"github.com/elastic/go-ucfg"
 )
 
 type SyslogOutput struct {
 	pWC io.WriteCloser
 }
 
-func New(c Config) (s *SyslogOutput, err error) {
+func New(cfg *ucfg.Config) (s *SyslogOutput, err error) {
+	c := defaultConfig()
+	if err := cfg.Unpack(&c); err != nil {
+		return nil, err
+	}
 	priority := getPriority(c.Facility, c.Severity)
 	sysLog, err := syslog.Dial(c.Network, net.JoinHostPort(c.Host, c.Port), priority, c.Tag)
 	if err != nil {

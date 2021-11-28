@@ -9,6 +9,8 @@ import (
 	"strings"
 	"text/template"
 	"time"
+
+	"github.com/elastic/go-ucfg"
 )
 
 var (
@@ -99,7 +101,12 @@ type Asa struct {
 	Templates        []*template.Template
 }
 
-func New(c Config) (a *Asa, err error) {
+func New(cfg *ucfg.Config) (a *Asa, err error) {
+	c := defaultConfig()
+	if err := cfg.Unpack(&c); err != nil {
+		return nil, err
+	}
+
 	a = &Asa{
 		SrcInt:           "SrcInt",
 		SrcUser:          "SrcUser",

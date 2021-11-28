@@ -9,10 +9,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/config"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/elastic/go-ucfg"
 )
 
 var (
@@ -28,9 +29,14 @@ type S3Output struct {
 	gw        *gzip.Writer
 }
 
-func New(c Config) (s *S3Output, err error) {
+func New(cfg *ucfg.Config) (s *S3Output, err error) {
+	c := defaultConfig()
+	if err := cfg.Unpack(&c); err != nil {
+		return nil, err
+	}
+
 	doOnce.Do(func() {
-		cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(c.Region))
+		cfg, err := awsconfig.LoadDefaultConfig(context.TODO(), awsconfig.WithRegion(c.Region))
 		if err != nil {
 			panic(err)
 		}
