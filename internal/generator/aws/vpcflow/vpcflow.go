@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/elastic/go-ucfg"
+	"github.com/leehinman/spigot/internal/random"
 )
 
 var ACTIONS = [...]string{"ACCEPT", "REJECT"}
@@ -48,10 +49,10 @@ func New(cfg *ucfg.Config) (v *Vpcflow, err error) {
 func (v *Vpcflow) Next() ([]byte, error) {
 	var buf bytes.Buffer
 
-	v.SrcAddr = generateAddr()
-	v.DstAddr = generateAddr()
-	v.SrcPort = rand.Intn(65536)
-	v.DstPort = rand.Intn(65536)
+	v.SrcAddr = random.IPv4()
+	v.DstAddr = random.IPv4()
+	v.SrcPort = random.Port()
+	v.DstPort = random.Port()
 	v.Protocol = rand.Intn(256)
 	v.Packets = rand.Intn(1048576)
 	v.Bytes = v.Packets * 1500
@@ -66,13 +67,8 @@ func (v *Vpcflow) Next() ([]byte, error) {
 
 	err := v.Template.Execute(&buf, v)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	return buf.Bytes(), err
 
-}
-
-func generateAddr() net.IP {
-	u32 := rand.Uint32()
-	return net.IPv4(byte(u32&0xff), byte((u32>>8)&0xff), byte((u32>>16)&0xff), byte((u32>>24)&0xff))
 }

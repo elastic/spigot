@@ -1,12 +1,11 @@
 package vpcflow
 
 type config struct {
-	Type    string `config:"type"`
-	Enabled bool   `config:"enabled"`
+	Type string `config:"type"`
 }
 
 func defaultConfig() config {
 	return config{
-		Type: "vpcflow",
+		Type: "aws:vpcflow",
 	}
 }

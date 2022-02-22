@@ -2,7 +2,6 @@ package syslog
 
 type config struct {
 	Type     string `config:"type"`
-	Enabled  bool   `config:"enabled"`
 	Facility string `config:"facility"`
 	Severity string `config:"severity"`
 	Tag      string `config:"tag"`

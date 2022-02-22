@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/elastic/go-ucfg"
+	"github.com/leehinman/spigot/internal/random"
 )
 
 var (
@@ -136,27 +137,22 @@ func (a *Asa) Next() ([]byte, error) {
 	a.Duration = fmt.Sprintf("%01d:%02d:%02d", rand.Intn(4), rand.Intn(60), rand.Intn(60))
 	a.Bytes = rand.Intn(65536)
 	a.Reason = Reasons[rand.Intn(len(Reasons))]
-	a.SrcAddr = generateAddr()
-	a.SrcPort = rand.Intn(65536)
-	a.DstAddr = generateAddr()
-	a.DstPort = rand.Intn(65536)
+	a.SrcAddr = random.IPv4()
+	a.SrcPort = random.Port()
+	a.DstAddr = random.IPv4()
+	a.DstPort = random.Port()
 	a.Type = rand.Intn(64)
 	a.Code = rand.Intn(64)
 	a.Direction = Directions[rand.Intn(len(Directions))]
-	a.Map1Addr = generateAddr()
-	a.Map1Port = rand.Intn(65536)
-	a.Map2Addr = generateAddr()
-	a.Map2Port = rand.Intn(65536)
+	a.Map1Addr = random.IPv4()
+	a.Map1Port = random.Port()
+	a.Map2Addr = random.IPv4()
+	a.Map2Port = random.Port()
 	a.Timestamp = time.Now()
 
 	err := a.Templates[rand.Intn(len(a.Templates))].Execute(&buf, a)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	return buf.Bytes(), err
-}
-
-func generateAddr() net.IP {
-	u32 := rand.Uint32()
-	return net.IPv4(byte(u32&0xff), byte((u32>>8)&0xff), byte((u32>>16)&0xff), byte((u32>>24)&0xff))
 }
