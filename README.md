@@ -6,6 +6,7 @@ Currently supported log formats are:
 
 - AWS vpcflow
 - Cisco ASA
+- Fortinet Firewall
 
 Currently supported destinations are:
 
@@ -14,76 +15,56 @@ Currently supported destinations are:
 - Syslog (TCP or UDP)
 
 
+## Command Line Flags
+
+- `-c` Path to configuration.  Default "./spigot.yml"
+- `-r` Seed random number generator with current time.  Default false.
+
+
 ## Config file
 
-Configuration file is required.  Here are the available options:
+A configuration file is required.  The configuration file is a list of
+runner configurations.  Runner configurations consist of:
+
+- generator object.  This contains the configuration for the generator.
+
+- output object.  This contains the configuration for the output.
+
+- records.  An integer, which is the number of records to write each
+  interval.
+
+- interval (Optional)  A golang duration.  Which specifies the time
+  between writing records.  If omitted then the runner is executed
+  once.
+  
+Example:
 
 ```yaml
 ---
-# workers: Number of go routines generating logs.  Each worker has a separate
-# destination.  example worker 2 would generate 2 log files for file output.
-workers: 2
-
-# records: number of log entries per output.  example records 5 would
-# output 5 lines to file output.
-records: 3
-
-# interval: go Duration, time in between running workers.
-interval: 10s
-
-# ASA.  include_timestamp mimics cisco timestamp in message behavior
-generator_asa:
-  enabled: true
-  include_timestamp: true
-
-generator_vpcflow:
-  enabled: false
-
-# File.  Directory is where logs will be written. Pattern is for
-# filename see os.CreateTemp.  Delimiter is string between records,
-# normally newline
-output_file:
-  enabled: true
-  directory: "/var/tmp"
-  pattern: "spigot_*.log"
-  delimiter: "\n"
-
-# S3. bucket is name of S3 bucket to write to.  Region is region
-# bucket is in.  Delimiter is string between records, normally
-# newline.  Prefix is for generating random key name, after name is
-# time in seconds & nano seconds.
-output_s3:
-  enabled: false
-  bucket: "leh-test-spigot"
-  region: "us-west-2"
-  delimiter: "\n"
-  prefix: "vpcflow"
-
-# Syslog. See log.syslog for valid facility and severities.  see
-# syslog.Dial for meaning of tag.  Network is udp or tcp.  host is
-# hostname to connect to.  port is port the syslog server is listen
-# on.
-  
-output_syslog:
-  enabled: false
-  facility: "LOG_LOCAL0"
-  severity: "LOG_INFO"
-  tag: "test"
-  network: "udp"
-  host: localhost
-  port: "1234"
-
+---
+runners:
+  - generator:
+      type: "cisco:asa"
+      include_timestamp: false
+    output:
+      type: file
+      directory: "/var/tmp"
+      pattern: "spigot_asa_*.log"
+      delimiter: "\n"
+    interval: 5s
+    records: 250
+  - generator:
+      type: "fortinet:firewall"
+      include_timestamp: false
+    output:
+      type: file
+      directory: "/var/tmp"
+      pattern: "spigot_fortinet_firewall_*.log"
+      delimiter: "\n"
+    interval: 10s
+    records: 2048
 ```
 
-
-## Running
-
-```
-spigot
-```
-
-All config is taken from config file which is assumed to be
-`spigot.yml` in same directory as executable.
 
 # Assumptions
 

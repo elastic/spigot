@@ -1,12 +1,16 @@
 package main
 
 import (
+	"flag"
+	"math/rand"
+	"time"
+
 	"github.com/elastic/go-ucfg"
 	"github.com/elastic/go-ucfg/yaml"
 	"github.com/leehinman/spigot/internal/runner"
 )
 
-type MainConfig struct {
+type Config struct {
 	Runners []*ucfg.Config `config:"runners" validate:"required"`
 }
 
@@ -15,11 +19,7 @@ type Result struct {
 	Error error
 }
 
-var (
-	defaultConfig = MainConfig{}
-)
-
-func run(cfg *ucfg.Config, results chan Result) {
+func execute_runner(cfg *ucfg.Config, results chan Result) {
 	r, err := runner.New(cfg)
 	if err != nil {
 		results <- Result{Error: err}
@@ -35,28 +35,37 @@ func run(cfg *ucfg.Config, results chan Result) {
 }
 
 func main() {
-	spigotConfig := defaultConfig
-	config, err := yaml.NewConfigWithFile("./spigot.yml", ucfg.PathSep("."))
+	var cfgFile string
+	var randomize bool
+
+	flag.StringVar(&cfgFile, "c", "./spigot.yml", "path to configuration file")
+	flag.BoolVar(&randomize, "r", false, "seed random number generator with current time")
+	flag.Parse()
+
+	c := Config{}
+	cfg, err := yaml.NewConfigWithFile(cfgFile, ucfg.PathSep("."))
 	if err != nil {
 		panic(err)
 	}
-	err = config.Unpack(&spigotConfig)
+	err = cfg.Unpack(&c)
 	if err != nil {
 		panic(err)
 	}
 
-	// rand.Seed(time.Now().UnixNano())
+	if randomize {
+		rand.Seed(time.Now().UnixNano())
+	}
 
 	resultCh := make(chan Result)
 
-	for _, runner_cfg := range spigotConfig.Runners {
-		runner_cfg := runner_cfg
+	for _, rCfg := range c.Runners {
+		rCfg := rCfg
 		go func() {
-			run(runner_cfg, resultCh)
+			execute_runner(rCfg, resultCh)
 		}()
 	}
 
-	for i := 0; i < len(spigotConfig.Runners); i++ {
+	for i := 0; i < len(c.Runners); i++ {
 		r := <-resultCh
 		if !r.Done {
 			panic(r.Error)
