@@ -5,6 +5,7 @@ import (
 
 	"github.com/elastic/go-ucfg"
 	"github.com/leehinman/spigot/internal/generator"
+	_ "github.com/leehinman/spigot/internal/include"
 	"github.com/leehinman/spigot/internal/output"
 )
 

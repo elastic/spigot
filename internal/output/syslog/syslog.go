@@ -6,13 +6,18 @@ import (
 	"net"
 
 	"github.com/elastic/go-ucfg"
+	"github.com/leehinman/spigot/internal/output"
 )
 
 type SyslogOutput struct {
 	pWC io.WriteCloser
 }
 
-func New(cfg *ucfg.Config) (s *SyslogOutput, err error) {
+func init() {
+	output.Register("syslog", New)
+}
+
+func New(cfg *ucfg.Config) (s output.Output, err error) {
 	c := defaultConfig()
 	if err := cfg.Unpack(&c); err != nil {
 		return nil, err

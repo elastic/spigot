@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/elastic/go-ucfg"
+	"github.com/leehinman/spigot/internal/generator"
 	"github.com/leehinman/spigot/internal/random"
 )
 
@@ -72,8 +73,12 @@ type Firewall struct {
 	XId            int
 }
 
-func New(cfg *ucfg.Config) (f *Firewall, err error) {
-	f = &Firewall{
+func init() {
+	generator.Register("fortinet:firewall", New)
+}
+
+func New(cfg *ucfg.Config) (generator.Generator, error) {
+	f := &Firewall{
 		DevName:  "testswitch3",
 		DevId:    "testrouter",
 		LogId:    "0123456789",

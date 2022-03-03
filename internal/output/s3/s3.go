@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/elastic/go-ucfg"
+	"github.com/leehinman/spigot/internal/output"
 )
 
 var (
@@ -29,7 +30,11 @@ type S3Output struct {
 	gw        *gzip.Writer
 }
 
-func New(cfg *ucfg.Config) (s *S3Output, err error) {
+func init() {
+	output.Register("s3", New)
+}
+
+func New(cfg *ucfg.Config) (s output.Output, err error) {
 	c := defaultConfig()
 	if err := cfg.Unpack(&c); err != nil {
 		return nil, err

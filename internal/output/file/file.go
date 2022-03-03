@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/elastic/go-ucfg"
+	"github.com/leehinman/spigot/internal/output"
 )
 
 type FileOutput struct {
@@ -12,7 +13,11 @@ type FileOutput struct {
 	pWC       io.WriteCloser
 }
 
-func New(cfg *ucfg.Config) (f *FileOutput, err error) {
+func init() {
+	output.Register("file", New)
+}
+
+func New(cfg *ucfg.Config) (f output.Output, err error) {
 	c := defaultConfig()
 	if err := cfg.Unpack(&c); err != nil {
 		return nil, err

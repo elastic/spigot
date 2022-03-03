@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/elastic/go-ucfg"
+	"github.com/leehinman/spigot/internal/generator"
 	"github.com/leehinman/spigot/internal/random"
 )
 
@@ -102,13 +103,17 @@ type Asa struct {
 	Templates        []*template.Template
 }
 
-func New(cfg *ucfg.Config) (a *Asa, err error) {
+func init() {
+	generator.Register("cisco:asa", New)
+}
+
+func New(cfg *ucfg.Config) (generator.Generator, error) {
 	c := defaultConfig()
 	if err := cfg.Unpack(&c); err != nil {
 		return nil, err
 	}
 
-	a = &Asa{
+	a := &Asa{
 		SrcInt:           "SrcInt",
 		SrcUser:          "SrcUser",
 		DstInt:           "DstInt",
