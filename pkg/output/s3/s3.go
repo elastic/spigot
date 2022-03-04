@@ -14,7 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/elastic/go-ucfg"
-	"github.com/leehinman/spigot/internal/output"
+	"github.com/leehinman/spigot/pkg/output"
 )
 
 var (

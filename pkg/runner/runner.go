@@ -4,9 +4,9 @@ import (
 	"time"
 
 	"github.com/elastic/go-ucfg"
-	"github.com/leehinman/spigot/internal/generator"
-	_ "github.com/leehinman/spigot/internal/include"
-	"github.com/leehinman/spigot/internal/output"
+	"github.com/leehinman/spigot/pkg/generator"
+	_ "github.com/leehinman/spigot/pkg/include"
+	"github.com/leehinman/spigot/pkg/output"
 )
 
 type Runner struct {

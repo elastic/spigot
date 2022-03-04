@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/elastic/go-ucfg"
-	"github.com/leehinman/spigot/internal/generator"
-	"github.com/leehinman/spigot/internal/random"
+	"github.com/leehinman/spigot/pkg/generator"
+	"github.com/leehinman/spigot/pkg/random"
 )
 
 var (

@@ -6,7 +6,7 @@ import (
 	"net"
 
 	"github.com/elastic/go-ucfg"
-	"github.com/leehinman/spigot/internal/output"
+	"github.com/leehinman/spigot/pkg/output"
 )
 
 type SyslogOutput struct {
