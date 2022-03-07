@@ -10,6 +10,12 @@
 //     region: "us-west"
 //     delimiter: "/n"
 //     prefix: "my_name"  ;; my_name_0123456789_001.gz
+//
+// Assumptions:
+//
+// - Either aws credentials file or environment variables (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY) are set.
+//
+// - Credentials have rights to put an S3 object into the bucket.
 package s3
 
 import (

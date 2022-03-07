@@ -13,7 +13,7 @@ Currently supported destinations are:
 - Local file
 - AWS S3 bucket
 - Syslog (TCP or UDP)
-
+- Rally (ndjson to local file)
 
 ## Command Line Flags
 
@@ -26,9 +26,11 @@ Currently supported destinations are:
 A configuration file is required.  The configuration file is a list of
 runner configurations.  Runner configurations consist of:
 
-- generator object.  This contains the configuration for the generator.
+- generator object.  This contains the configuration for the
+  generator.  See godoc for each generator for config options.
 
-- output object.  This contains the configuration for the output.
+- output object.  This contains the configuration for the output.  See
+  godoc for each output for config options.
 
 - records.  An integer, which is the number of records to write each
   interval.
@@ -40,7 +42,6 @@ runner configurations.  Runner configurations consist of:
 Example:
 
 ```yaml
----
 ---
 runners:
   - generator:
@@ -65,10 +66,3 @@ runners:
     records: 2048
 ```
 
-
-# Assumptions
-
-## S3 output
-- Either aws credentials file or environment variables
-  (AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY) are set.
-- Credentials have rights to put an S3 object into the bucket.

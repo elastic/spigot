@@ -1,4 +1,4 @@
-// File package implements the output of logs to a file.
+// Package file implements the output of logs to a file.
 //
 // Configuration file supports either writing to a file or a directory
 // with random names.  delimiter is required.  This is the string to

@@ -1,11 +1,16 @@
 //Package runner provides the glue to link a generator to an output and to execute.
 //
 //  Configuration.
-//  "generator" and "output" are required, and are the configs of the specific types
 //
-//  "records" is optional, default is 1024.  This is the number of log records to write per interval
+//  "generator" and "output" are required, and are the configs of the
+//  specific types.
 //
-//  "interval" is optional and is a go duration.  If no interval is given then the runner is executed once.  If an interval is given that at each interval the runner is executed.
+//  "records" is optional, default is 1024.  This is the number of log
+//  records to write per interval.
+//
+//  "interval" is optional and is a go duration.  If no interval is
+//  given then the runner is executed once.  If an interval is given
+//  then at each interval the runner is executed.
 //
 //  Example:
 //
@@ -19,8 +24,8 @@
 //    interval: 5s
 //    records: 2
 //
-//  This would write one 2 vpcflow log entries to a file in the /var/tmp/spigot_asa_<random>.log file
-//  every 5 seconds.
+//  This would write 2 vpcflow log entries to a file in the
+//  /var/tmp/spigot_asa_<random>.log file every 5 seconds.
 package runner
 
 import (
