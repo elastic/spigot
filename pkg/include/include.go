@@ -1,3 +1,5 @@
+// Package include exists to import generators and outputs so the init
+// function is run.
 package include
 
 import (

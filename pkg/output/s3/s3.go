@@ -1,3 +1,15 @@
+// Package s3 implements the output of logs to an AWS s3 bucket
+//
+// For configuration, "type", "bucket", "region", and "prefix" are all required.
+//
+// "delimiter" is optional and controls the character written between log entries, by default "/n"
+//
+//   output:
+//     type: aws:s3
+//     bucket: "bucket_name"
+//     region: "us-west"
+//     delimiter: "/n"
+//     prefix: "my_name"  ;; my_name_0123456789_001.gz
 package s3
 
 import (
@@ -17,11 +29,15 @@ import (
 	"github.com/leehinman/spigot/pkg/output"
 )
 
+// Name is the name used in the configuration file and the registry.
+const Name = "s3"
+
 var (
 	doOnce   sync.Once
 	uploader *manager.Uploader
 )
 
+// S3Output holds config for writing to S3.
 type S3Output struct {
 	delimiter string
 	bucket    string
@@ -31,9 +47,10 @@ type S3Output struct {
 }
 
 func init() {
-	output.Register("s3", New)
+	output.Register(Name, New)
 }
 
+// New is factory for creating a new S3Output
 func New(cfg *ucfg.Config) (s output.Output, err error) {
 	c := defaultConfig()
 	if err := cfg.Unpack(&c); err != nil {
@@ -61,6 +78,7 @@ func New(cfg *ucfg.Config) (s output.Output, err error) {
 	return s, nil
 }
 
+// Write writes log entry to internal buffer
 func (s *S3Output) Write(b []byte) (n int, err error) {
 	j, err := s.gw.Write(b)
 	if err != nil {
@@ -70,6 +88,7 @@ func (s *S3Output) Write(b []byte) (n int, err error) {
 	return j + k, err
 }
 
+// Close closes internal buffer and uploads data to S3
 func (s *S3Output) Close() error {
 	s.gw.Close()
 

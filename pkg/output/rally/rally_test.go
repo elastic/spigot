@@ -34,7 +34,7 @@ func TestWrite(t *testing.T) {
 		var buf bytes.Buffer
 		var wc = &myWriteCloser{&buf}
 
-		r := &RallyOutput{
+		r := &Output{
 			pWriteCloser: wc,
 		}
 		for _, line := range tc.input {

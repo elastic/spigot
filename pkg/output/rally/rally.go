@@ -1,3 +1,19 @@
+// Package rally outputs logs to ndjson suitable for use by https://github.com/elastic/rally
+//
+// Configuration file supports either writing to a file or a directory with random names.
+//
+//   output:
+//     type: rally
+//     filename: "/var/tmp/rally.ndjson"
+//
+// or
+//
+//  output:
+//    type: rally
+//    directory: "/var/tmp"
+//    pattern: "rally_*"
+//
+// directory and pattern are used in os.CreateTemp call
 package rally
 
 import (
@@ -9,9 +25,12 @@ import (
 	"github.com/leehinman/spigot/pkg/output"
 )
 
-const OutputName = "rally"
+// Name is the name of the output in the configuration file and registry
+const Name = "rally"
 
-type RallyOutput struct {
+// RallyOutput stores pointer to an io.WriteCloser.  This is where the
+// log entries will be written.
+type Output struct {
 	pWriteCloser io.WriteCloser
 }
 
@@ -20,9 +39,11 @@ type entry struct {
 }
 
 func init() {
-	output.Register(OutputName, New)
+	output.Register(Name, New)
 }
 
+// New is the Factory for creating a new rally output.  Calling this
+// results in a file handle being opened to write the data to.
 func New(cfg *ucfg.Config) (output.Output, error) {
 	var pOsFile *os.File
 	var err error
@@ -43,10 +64,12 @@ func New(cfg *ucfg.Config) (output.Output, error) {
 			return nil, err
 		}
 	}
-	return &RallyOutput{pWriteCloser: pOsFile}, nil
+	return &Output{pWriteCloser: pOsFile}, nil
 }
 
-func (r *RallyOutput) Write(b []byte) (int, error) {
+// Write formats the log for rally and writes the data to the file
+// handle that was opened with New
+func (r *Output) Write(b []byte) (int, error) {
 	e := &entry{
 		Message: string(b),
 	}
@@ -62,6 +85,7 @@ func (r *RallyOutput) Write(b []byte) (int, error) {
 	return n + k, err
 }
 
-func (r *RallyOutput) Close() error {
+// Close closes the io.WriteCloser.  Writes after this will fail.
+func (r *Output) Close() error {
 	return r.pWriteCloser.Close()
 }

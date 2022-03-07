@@ -1,10 +1,9 @@
-package asa
+package firewall
 
 import "fmt"
 
 type config struct {
-	Type             string `config:"type" validate:"required"`
-	IncludeTimestamp bool   `config:"include_timestamp"`
+	Type string `config:"type" validate:"required"`
 }
 
 func defaultConfig() config {

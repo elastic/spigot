@@ -1,3 +1,10 @@
+// Package asa implements the generator for Cisco ASA logs.
+//
+// Configuration file supports including timestamps in log messages
+//
+//   generator:
+//     type: cisco:asa
+//     include_timestamp: true
 package asa
 
 import (
@@ -6,7 +13,6 @@ import (
 	"math/rand"
 	"net"
 	"strconv"
-	"strings"
 	"text/template"
 	"time"
 
@@ -15,25 +21,24 @@ import (
 	"github.com/leehinman/spigot/pkg/random"
 )
 
+// Name is the name of the generator in the configuration file and registry
+const Name = "cisco:asa"
+
 var (
-	Asa106023    = "{{if .IncludeTimestamp}}{{.Timestamp.Format \"Jan 02 2006 03:04:05\"}}: {{end}}%ASA-4-106023: Deny {{.Protocol | ToLower}} src {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} dst {{.DstInt}}:{{.DstAddr}}/{{.DstPort}} type {{.Type}} code {{.Code}} by {{.AccessGroup | ToLower}} \"{{.AclId}}\" [0x8ed66b60, 0xf8852875]"
-	Asa302013    = "{{if .IncludeTimestamp}}{{.Timestamp.Format \"Jan 02 2006 03:04:05\"}}: {{end}}%ASA-6-302013: Built {{.Direction}} TCP connection {{.ConnectionId}} for {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} ({{.Map1Addr}}/{{.Map1Port}}) to {{.DstInt}}:{{.DstAddr}}/{{.DstPort}} ({{.Map2Addr}}/{{.Map2Port}})"
-	Asa302014    = "{{if .IncludeTimestamp}}{{.Timestamp.Format \"Jan 02 2006 03:04:05\"}}: {{end}}%ASA-6-302014: Teardown TCP connection {{.ConnectionId}} for {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} to {{.DstInt}}:{{.DstAddr}}/{{.DstPort}} duration {{.Duration}} bytes {{.Bytes}} {{.Reason}}"
-	Asa305011    = "{{if .IncludeTimestamp}}{{.Timestamp.Format \"Jan 02 2006 03:04:05\"}}: {{end}}%ASA-6-305011: Built {{.TranslationType}} {{.Protocol}} translation from {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} to {{.DstInt}}:{{.DstAddr}}/{{.DstPort}}"
-	MsgTemplates = [...]string{
-		Asa106023,
-		Asa302013,
-		Asa302014,
-		Asa305011,
+	asa106023    = "{{if .IncludeTimestamp}}{{.Timestamp.Format \"Jan 02 2006 03:04:05\"}}: {{end}}%ASA-4-106023: Deny {{.Protocol | ToLower}} src {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} dst {{.DstInt}}:{{.DstAddr}}/{{.DstPort}} type {{.Type}} code {{.Code}} by {{.AccessGroup | ToLower}} \"{{.AclId}}\" [0x8ed66b60, 0xf8852875]"
+	asa302013    = "{{if .IncludeTimestamp}}{{.Timestamp.Format \"Jan 02 2006 03:04:05\"}}: {{end}}%ASA-6-302013: Built {{.Direction}} TCP connection {{.ConnectionId}} for {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} ({{.Map1Addr}}/{{.Map1Port}}) to {{.DstInt}}:{{.DstAddr}}/{{.DstPort}} ({{.Map2Addr}}/{{.Map2Port}})"
+	asa302014    = "{{if .IncludeTimestamp}}{{.Timestamp.Format \"Jan 02 2006 03:04:05\"}}: {{end}}%ASA-6-302014: Teardown TCP connection {{.ConnectionId}} for {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} to {{.DstInt}}:{{.DstAddr}}/{{.DstPort}} duration {{.Duration}} bytes {{.Bytes}} {{.Reason}}"
+	asa305011    = "{{if .IncludeTimestamp}}{{.Timestamp.Format \"Jan 02 2006 03:04:05\"}}: {{end}}%ASA-6-305011: Built {{.TranslationType}} {{.Protocol}} translation from {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} to {{.DstInt}}:{{.DstAddr}}/{{.DstPort}}"
+	msgTemplates = [...]string{
+		asa106023,
+		asa302013,
+		asa302014,
+		asa305011,
 	}
-	FuncMap = template.FuncMap{
-		"ToLower": strings.ToLower,
-		"ToUpper": strings.ToUpper,
-	}
-	Directions       = [...]string{"inbound", "outbound"}
-	Protocols        = [...]string{"TCP", "UDP"}
-	TranslationTypes = [...]string{"dynamic", "static"}
-	Reasons          = [...]string{
+	directions       = [...]string{"inbound", "outbound"}
+	protocols        = [...]string{"TCP", "UDP"}
+	translationTypes = [...]string{"dynamic", "static"}
+	reasons          = [...]string{
 		"Conn-timeout",
 		"Deny Terminate",
 		"Failover primary closed",
@@ -100,13 +105,14 @@ type Asa struct {
 	Timestamp        time.Time
 	TranslationType  string
 	Type             int
-	Templates        []*template.Template
+	templates        []*template.Template
 }
 
 func init() {
-	generator.Register("cisco:asa", New)
+	generator.Register(Name, New)
 }
 
+// New is Factory for the asa generator
 func New(cfg *ucfg.Config) (generator.Generator, error) {
 	c := defaultConfig()
 	if err := cfg.Unpack(&c); err != nil {
@@ -114,50 +120,58 @@ func New(cfg *ucfg.Config) (generator.Generator, error) {
 	}
 
 	a := &Asa{
-		SrcInt:           "SrcInt",
-		SrcUser:          "SrcUser",
-		DstInt:           "DstInt",
-		DstUser:          "DstUser",
-		AccessGroup:      "Access-Group",
-		AclId:            "AclId",
 		IncludeTimestamp: c.IncludeTimestamp,
 	}
+	a.randomize()
 
-	for i, v := range MsgTemplates {
-		t, err := template.New(strconv.Itoa(i)).Funcs(FuncMap).Parse(v)
+	for i, v := range msgTemplates {
+		t, err := template.New(strconv.Itoa(i)).Funcs(generator.FunctionMap).Parse(v)
 		if err != nil {
 			return nil, err
 		}
-		a.Templates = append(a.Templates, t)
+		a.templates = append(a.templates, t)
 	}
 
 	return a, nil
 }
 
+// Next produces the next asa log entry
 func (a *Asa) Next() ([]byte, error) {
 	var buf bytes.Buffer
-	a.Protocol = Protocols[rand.Intn(len(Protocols))]
-	a.TranslationType = TranslationTypes[rand.Intn(len(TranslationTypes))]
+
+	err := a.templates[rand.Intn(len(a.templates))].Execute(&buf, a)
+	if err != nil {
+		return nil, err
+	}
+
+	a.randomize()
+
+	return buf.Bytes(), err
+}
+
+func (a *Asa) randomize() {
+	a.SrcInt = "SrcInt"
+	a.SrcUser = "SrcUser"
+	a.DstInt = "DstInt"
+	a.DstUser = "DstUser"
+	a.AccessGroup = "Access-Group"
+	a.AclId = "AclId"
+	a.Protocol = protocols[rand.Intn(len(protocols))]
+	a.TranslationType = translationTypes[rand.Intn(len(translationTypes))]
 	a.ConnectionId = rand.Intn(65536)
 	a.Duration = fmt.Sprintf("%01d:%02d:%02d", rand.Intn(4), rand.Intn(60), rand.Intn(60))
 	a.Bytes = rand.Intn(65536)
-	a.Reason = Reasons[rand.Intn(len(Reasons))]
+	a.Reason = reasons[rand.Intn(len(reasons))]
 	a.SrcAddr = random.IPv4()
 	a.SrcPort = random.Port()
 	a.DstAddr = random.IPv4()
 	a.DstPort = random.Port()
 	a.Type = rand.Intn(64)
 	a.Code = rand.Intn(64)
-	a.Direction = Directions[rand.Intn(len(Directions))]
+	a.Direction = directions[rand.Intn(len(directions))]
 	a.Map1Addr = random.IPv4()
 	a.Map1Port = random.Port()
 	a.Map2Addr = random.IPv4()
 	a.Map2Port = random.Port()
 	a.Timestamp = time.Now()
-
-	err := a.Templates[rand.Intn(len(a.Templates))].Execute(&buf, a)
-	if err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), err
 }

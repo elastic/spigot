@@ -1,4 +1,4 @@
-package rally
+package file
 
 import (
 	"testing"
@@ -13,19 +13,19 @@ func TestConfigs(t *testing.T) {
 		errorString string
 	}{
 		"Valid Filename": {
-			c:           config{Type: Name, Filename: "output.log"},
+			c:           config{Type: Name, Filename: "output.log", Delimiter: "\n"},
 			hasError:    false,
 			errorString: "",
 		},
 		"Valid Dir and Pattern": {
-			c:           config{Type: Name, Directory: "/var/tmp", Pattern: "output_"},
+			c:           config{Type: Name, Directory: "/var/tmp", Pattern: "output_*", Delimiter: "\n"},
 			hasError:    false,
 			errorString: "",
 		},
 		"Wrong type": {
-			c:           config{Type: "malory", Filename: "output.log"},
+			c:           config{Type: "malory", Filename: "output.log", Delimiter: "\n"},
 			hasError:    true,
-			errorString: "malory is not a valid type for rally",
+			errorString: "malory is not a valid type for file",
 		},
 		"Dir and filename set": {
 			c:           config{Type: Name, Directory: "/var/tmp", Filename: "output.log"},

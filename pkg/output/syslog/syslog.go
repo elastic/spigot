@@ -1,3 +1,17 @@
+// Package syslog supports writing events to syslog
+//
+// Configuration:
+// "type", "network", "host", and "port" are all required.
+//
+// "facility" is optional and defaults to LOG.KERN
+// "severity" is optional and defaults to LOG.EMERG
+// "tag" is optional tag to add to message
+//
+//   output:
+//     type: syslog
+//     network: tcp
+//     host: localhost
+//     port: 1234
 package syslog
 
 import (
@@ -9,14 +23,19 @@ import (
 	"github.com/leehinman/spigot/pkg/output"
 )
 
-type SyslogOutput struct {
+// Name is the name used in the configuration file and the registry.
+const Name = "syslog"
+
+// Output hosts the WriteCloser
+type Output struct {
 	pWC io.WriteCloser
 }
 
 func init() {
-	output.Register("syslog", New)
+	output.Register(Name, New)
 }
 
+// New is the Factory for making a new syslog output
 func New(cfg *ucfg.Config) (s output.Output, err error) {
 	c := defaultConfig()
 	if err := cfg.Unpack(&c); err != nil {
@@ -27,17 +46,19 @@ func New(cfg *ucfg.Config) (s output.Output, err error) {
 	if err != nil {
 		return nil, err
 	}
-	s = &SyslogOutput{
+	s = &Output{
 		pWC: sysLog,
 	}
 	return s, nil
 }
 
-func (s *SyslogOutput) Write(b []byte) (n int, err error) {
+// Write sends the log message to the syslog server
+func (s *Output) Write(b []byte) (n int, err error) {
 	return s.pWC.Write(b)
 }
 
-func (s *SyslogOutput) Close() error {
+// Close closes the connection to the syslog server
+func (s *Output) Close() error {
 	return s.pWC.Close()
 }
 

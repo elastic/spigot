@@ -1,3 +1,23 @@
+// File package implements the output of logs to a file.
+//
+// Configuration file supports either writing to a file or a directory
+// with random names.  delimiter is required.  This is the string to
+// write between log entries.  Normally a new line "\n"
+//
+//   output:
+//     type: file
+//     filename: "/var/tmp/rally.ndjson"
+//     delimiter: "/n"
+//
+// or
+//
+//  output:
+//    type: file
+//    directory: "/var/tmp"
+//    pattern: "rally_*"
+//    delimiter: "\r\n"
+//
+// directory and pattern are used in os.CreateTemp call
 package file
 
 import (
@@ -8,40 +28,58 @@ import (
 	"github.com/leehinman/spigot/pkg/output"
 )
 
-type FileOutput struct {
-	delimiter string
-	pWC       io.WriteCloser
+// OutputName is the name of the output in the configuration file and registry
+const Name = "file"
+
+// Output stores pointer to an io.WriteCloser.  This is where the log
+// entries will be written.  It also stores the delimiter that will be
+// added between log entries.
+type Output struct {
+	delimiter    string
+	pWriteCloser io.WriteCloser
 }
 
 func init() {
-	output.Register("file", New)
+	output.Register(Name, New)
 }
 
-func New(cfg *ucfg.Config) (f output.Output, err error) {
+// New is the Factory for creating a new file output.  Calling this
+// results in a file handle being opened to write the log data to.
+func New(cfg *ucfg.Config) (output.Output, error) {
+	var pOsFile *os.File
+	var err error
+
 	c := defaultConfig()
-	if err := cfg.Unpack(&c); err != nil {
+	if err = cfg.Unpack(&c); err != nil {
 		return nil, err
 	}
-	pWC, err := os.CreateTemp(c.Directory, c.Pattern)
-	if err != nil {
-		return nil, err
+	if c.Directory != "" && c.Pattern != "" {
+		pOsFile, err = os.CreateTemp(c.Directory, c.Pattern)
+		if err != nil {
+			return nil, err
+		}
 	}
-	f = &FileOutput{
-		delimiter: c.Delimiter,
-		pWC:       pWC,
+	if c.Filename != "" {
+		pOsFile, err = os.Create(c.Filename)
+		if err != nil {
+			return nil, err
+		}
 	}
-	return f, nil
+	return &Output{pWriteCloser: pOsFile, delimiter: c.Delimiter}, nil
 }
 
-func (f *FileOutput) Write(b []byte) (n int, err error) {
-	j, err := f.pWC.Write(b)
+// Write writes the log entry to the file handle that is opened with
+// new and appends the delimiter.
+func (o *Output) Write(b []byte) (n int, err error) {
+	j, err := o.pWriteCloser.Write(b)
 	if err != nil {
 		return j, err
 	}
-	k, err := f.pWC.Write([]byte(f.delimiter))
+	k, err := o.pWriteCloser.Write([]byte(o.delimiter))
 	return j + k, err
 }
 
-func (f *FileOutput) Close() error {
-	return f.pWC.Close()
+// Close closes the io.WriteCloser.  Writes after this will fail.
+func (o *Output) Close() error {
+	return o.pWriteCloser.Close()
 }

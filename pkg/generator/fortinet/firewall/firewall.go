@@ -1,3 +1,9 @@
+// Package firewall generates Fortinet Firewall log messages
+//
+// For the configuration file there are no options so only the following is needed:
+//
+//   - generator:
+//       type: "fortinet:firewall"
 package firewall
 
 import (
@@ -5,7 +11,6 @@ import (
 	"math/rand"
 	"net"
 	"strconv"
-	"strings"
 	"text/template"
 	"time"
 
@@ -14,32 +19,32 @@ import (
 	"github.com/leehinman/spigot/pkg/random"
 )
 
+// Name is the name used in the configuration file and the registry.
+const Name = "fortinet:firewall"
+
 var (
-	EventUserTemplate      = "date={{.Date.UTC.Format \"2006-01-02\"}} time={{.Date.UTC.Format \"03:04:05\"}} devname=\"{{.DevName}}\" devid=\"{{.DevId}}\" logid=\"{{.LogId}}\" type=\"event\" subtype=\"user\" level=\"{{.Level}}\" vd=\"{{.Vd}}\" eventtime={{.Date.Unix}} tz=\"{{.Timezone}}\" logdesc=\"FSSO logon authentication status\" srcip={{.SrcIp}} user=\"{{.User}}\" server=\"{{.Server}}\" action=\"FSSO-logon\" msg=\"FSSO-logon event from FSSO_{{.Server}}: user {{.User}} logged on {{.SrcIp}}\""
-	EventSystemTemplate    = "date={{.Date.UTC.Format \"2006-01-02\"}} time={{.Date.UTC.Format \"03:04:05\"}} devname=\"{{.DevName}}\" devid=\"{{.DevId}}\" logid=\"{{.LogId}}\" type=\"event\" subtype=\"system\" level=\"{{.Level}}\" vd=\"{{.Vd}}\" eventtime={{.Date.Unix}} tz=\"{{.Timezone}}\" logdesc=\"FortiSandbox AV database updated\" version=\"1.522479\" msg=\"FortiSandbox AV database updated\""
-	UtmDnsTemplate         = "date={{.Date.UTC.Format \"2006-01-02\"}} time={{.Date.UTC.Format \"03:04:05\"}} devname=\"{{.DevName}}\" devid=\"{{.DevId}}\" logid=\"{{.LogId}}\" type=\"utm\" subtype=\"dns\" eventtype=\"dns-query\" level=\"{{.Level}}\" vd=\"{{.Vd}}\" eventtime={{.Date.Unix}} tz=\"{{.Timezone}}\" policyid={{.PolicyId}} sessionid={{.SessionId}} srcip={{.SrcIp}} srcport={{.SrcPort}} srcintf=\"{{.Interface1}}\" srcintfrole=\"{{.InterfaceRole1}}\" dstip={{.DstIp}} dstport=53 dstintf=\"{{.Interface2}}\" dstintfrole=\"{{.InterfaceRole2}}\" proto={{.Protocol}} profile=\"elastictest\" xid={{.XId}} qname=\"{{.QueryName}}\" qtype=\"{{.QueryType}}\" qtypeval=1 qclass=\"IN\""
-	TrafficForwardTemplate = "date={{.Date.UTC.Format \"2006-01-02\"}} time={{.Date.UTC.Format \"03:04:05\"}} devname=\"{{.DevName}}\" devid=\"{{.DevId}}\" logid=\"{{.LogId}}\" type=\"traffic\" subtype=\"forward\" level=\"{{.Level}}\" vd=\"{{.Vd}}\" eventtime={{.Date.Unix}} srcip={{.SrcIp}} srcport={{.SrcPort}} srcintf=\"{{.Interface1}}\" srcintfrole=\"{{.InterfaceRole1}}\" dstip={{.DstIp}} dstport={{.DstPort}} dstintf=\"{{.Interface2}}\" dstintfrole=\"{{.InterfaceRole2}}\" sessionid={{.SessionId}} proto={{.Protocol}} action=\"{{.TrafficAction}}\" policyid={{.PolicyId}} policytype=\"policy\" service=\"SNMP\" dstcountry=\"Reserved\" srccountry=\"Reserved\" trandisp=\"noop\" duration={{.Duration}} sentbyte={{.SentBytes}} rcvdbyte={{.SentBytes}} sentpkt={{.SentPackets}} appcat=\"unscanned\" crscore=30 craction=131072 crlevel=\"high\""
-	MsgTemplates           = [...]string{
-		EventUserTemplate,
-		EventSystemTemplate,
-		UtmDnsTemplate,
-		TrafficForwardTemplate,
+	eventUserTemplate      = "date={{.Date.UTC.Format \"2006-01-02\"}} time={{.Date.UTC.Format \"03:04:05\"}} devname=\"{{.DevName}}\" devid=\"{{.DevId}}\" logid=\"{{.LogId}}\" type=\"event\" subtype=\"user\" level=\"{{.Level}}\" vd=\"{{.Vd}}\" eventtime={{.Date.Unix}} tz=\"{{.Timezone}}\" logdesc=\"FSSO logon authentication status\" srcip={{.SrcIp}} user=\"{{.User}}\" server=\"{{.Server}}\" action=\"FSSO-logon\" msg=\"FSSO-logon event from FSSO_{{.Server}}: user {{.User}} logged on {{.SrcIp}}\""
+	eventSystemTemplate    = "date={{.Date.UTC.Format \"2006-01-02\"}} time={{.Date.UTC.Format \"03:04:05\"}} devname=\"{{.DevName}}\" devid=\"{{.DevId}}\" logid=\"{{.LogId}}\" type=\"event\" subtype=\"system\" level=\"{{.Level}}\" vd=\"{{.Vd}}\" eventtime={{.Date.Unix}} tz=\"{{.Timezone}}\" logdesc=\"FortiSandbox AV database updated\" version=\"1.522479\" msg=\"FortiSandbox AV database updated\""
+	utmDnsTemplate         = "date={{.Date.UTC.Format \"2006-01-02\"}} time={{.Date.UTC.Format \"03:04:05\"}} devname=\"{{.DevName}}\" devid=\"{{.DevId}}\" logid=\"{{.LogId}}\" type=\"utm\" subtype=\"dns\" eventtype=\"dns-query\" level=\"{{.Level}}\" vd=\"{{.Vd}}\" eventtime={{.Date.Unix}} tz=\"{{.Timezone}}\" policyid={{.PolicyId}} sessionid={{.SessionId}} srcip={{.SrcIp}} srcport={{.SrcPort}} srcintf=\"{{.Interface1}}\" srcintfrole=\"{{.InterfaceRole1}}\" dstip={{.DstIp}} dstport=53 dstintf=\"{{.Interface2}}\" dstintfrole=\"{{.InterfaceRole2}}\" proto={{.Protocol}} profile=\"elastictest\" xid={{.XId}} qname=\"{{.QueryName}}\" qtype=\"{{.QueryType}}\" qtypeval=1 qclass=\"IN\""
+	trafficForwardTemplate = "date={{.Date.UTC.Format \"2006-01-02\"}} time={{.Date.UTC.Format \"03:04:05\"}} devname=\"{{.DevName}}\" devid=\"{{.DevId}}\" logid=\"{{.LogId}}\" type=\"traffic\" subtype=\"forward\" level=\"{{.Level}}\" vd=\"{{.Vd}}\" eventtime={{.Date.Unix}} srcip={{.SrcIp}} srcport={{.SrcPort}} srcintf=\"{{.Interface1}}\" srcintfrole=\"{{.InterfaceRole1}}\" dstip={{.DstIp}} dstport={{.DstPort}} dstintf=\"{{.Interface2}}\" dstintfrole=\"{{.InterfaceRole2}}\" sessionid={{.SessionId}} proto={{.Protocol}} action=\"{{.TrafficAction}}\" policyid={{.PolicyId}} policytype=\"policy\" service=\"SNMP\" dstcountry=\"Reserved\" srccountry=\"Reserved\" trandisp=\"noop\" duration={{.Duration}} sentbyte={{.SentBytes}} rcvdbyte={{.SentBytes}} sentpkt={{.SentPackets}} appcat=\"unscanned\" crscore=30 craction=131072 crlevel=\"high\""
+	msgTemplates           = [...]string{
+		eventUserTemplate,
+		eventSystemTemplate,
+		utmDnsTemplate,
+		trafficForwardTemplate,
 	}
-	FuncMap = template.FuncMap{
-		"ToLower": strings.ToLower,
-		"ToUpper": strings.ToUpper,
-	}
-	Users          = [...]string{"user01", "user02", "user03", "user04", "user05", "user06", "user07"}
-	Levels         = [...]string{"warning", "notice", "information", "error"}
-	Interfaces     = [...]string{"int0", "int1", "int2", "int3", "int4", "int5", "int6", "int7"}
-	Roles          = [...]string{"lan", "wan", "internal", "external", "inbound", "outbound"}
-	Protocols      = [...]int{6, 17}
-	Queries        = [...]string{"example.com", "google.com", "amazon.com", "elastic.co", "apple.com", "facebook.com", "microsoft.com"}
-	QueryTypes     = [...]string{"A", "AAAA"}
-	Servers        = [...]string{"srv0", "srv1", "srv2", "srv3", "srv4", "srv5", "srv6", "srv7"}
-	TrafficActions = [...]string{"deny", "accept"}
+	users          = [...]string{"user01", "user02", "user03", "user04", "user05", "user06", "user07"}
+	levels         = [...]string{"warning", "notice", "information", "error"}
+	interfaces     = [...]string{"int0", "int1", "int2", "int3", "int4", "int5", "int6", "int7"}
+	roles          = [...]string{"lan", "wan", "internal", "external", "inbound", "outbound"}
+	protocols      = [...]int{6, 17}
+	queries        = [...]string{"example.com", "google.com", "amazon.com", "elastic.co", "apple.com", "facebook.com", "microsoft.com"}
+	queryTypes     = [...]string{"A", "AAAA"}
+	servers        = [...]string{"srv0", "srv1", "srv2", "srv3", "srv4", "srv5", "srv6", "srv7"}
+	trafficActions = [...]string{"deny", "accept"}
 )
 
+// Firewall holds the random fields for a firewall record
 type Firewall struct {
 	Date           time.Time
 	DevId          string
@@ -74,19 +79,21 @@ type Firewall struct {
 }
 
 func init() {
-	generator.Register("fortinet:firewall", New)
+	generator.Register(Name, New)
 }
 
+// New is the Factory for Firewall objects.
 func New(cfg *ucfg.Config) (generator.Generator, error) {
-	f := &Firewall{
-		DevName:  "testswitch3",
-		DevId:    "testrouter",
-		LogId:    "0123456789",
-		Timezone: "-0500",
+	c := defaultConfig()
+	if err := cfg.Unpack(&c); err != nil {
+		return nil, err
 	}
+
+	f := &Firewall{}
 	f.randomize()
-	for i, v := range MsgTemplates {
-		t, err := template.New(strconv.Itoa(i)).Funcs(FuncMap).Parse(v)
+
+	for i, v := range msgTemplates {
+		t, err := template.New(strconv.Itoa(i)).Funcs(generator.FunctionMap).Parse(v)
 		if err != nil {
 			return nil, err
 		}
@@ -95,6 +102,11 @@ func New(cfg *ucfg.Config) (generator.Generator, error) {
 	return f, nil
 }
 
+// Next produces the next firewall record.
+//
+// Example:
+//
+// date=1970-01-02 time=03:04:05 devname=\"testswitch3\" devid=\"testrouter\" logid=\"0123456789\" type=\"event\" subtype=\"user\" level=\"error\" vd=\"root\" eventtime=97445 tz=\"-0500\" logdesc=\"FSSO logon authentication status\" srcip=142.155.32.170 user=\"user07\" server=\"srv7\" action=\"FSSO-logon\" msg=\"FSSO-logon event from FSSO_srv7: user user07 logged on 142.155.32.170\"
 func (f *Firewall) Next() ([]byte, error) {
 	var buf bytes.Buffer
 
@@ -109,26 +121,30 @@ func (f *Firewall) Next() ([]byte, error) {
 }
 
 func (f *Firewall) randomize() {
+	f.DevName = "testswitch3"
+	f.DevId = "testrouter"
+	f.LogId = "0123456789"
+	f.Timezone = "-0500"
 	f.Date = time.Now()
 	f.Vd = "root"
-	f.User = Users[rand.Intn(len(Users))]
-	f.Server = Servers[rand.Intn(len(Servers))]
+	f.User = users[rand.Intn(len(users))]
+	f.Server = servers[rand.Intn(len(servers))]
 	f.SrcIp = random.IPv4()
 	f.SrcPort = random.Port()
 	f.DstIp = random.IPv4()
 	f.DstPort = random.Port()
 	f.PolicyId = rand.Intn(256)
 	f.SessionId = rand.Intn(65536)
-	f.Interface1 = Interfaces[rand.Intn(len(Interfaces))]
-	f.Interface2 = Interfaces[rand.Intn(len(Interfaces))]
-	f.InterfaceRole1 = Roles[rand.Intn(len(Roles))]
-	f.InterfaceRole2 = Roles[rand.Intn(len(Roles))]
-	f.Protocol = Protocols[rand.Intn(len(Protocols))]
-	f.QueryName = Queries[rand.Intn(len(Queries))]
-	f.QueryType = QueryTypes[rand.Intn(len(QueryTypes))]
+	f.Interface1 = interfaces[rand.Intn(len(interfaces))]
+	f.Interface2 = interfaces[rand.Intn(len(interfaces))]
+	f.InterfaceRole1 = roles[rand.Intn(len(roles))]
+	f.InterfaceRole2 = roles[rand.Intn(len(roles))]
+	f.Protocol = protocols[rand.Intn(len(protocols))]
+	f.QueryName = queries[rand.Intn(len(queries))]
+	f.QueryType = queryTypes[rand.Intn(len(queryTypes))]
 	f.XId = rand.Intn(256)
-	f.Level = Levels[rand.Intn(len(Levels))]
-	f.TrafficAction = TrafficActions[rand.Intn(len(TrafficActions))]
+	f.Level = levels[rand.Intn(len(levels))]
+	f.TrafficAction = trafficActions[rand.Intn(len(trafficActions))]
 	f.SentPackets = rand.Intn(65536)
 	f.SentBytes = f.SentPackets * 1500
 	f.Duration = rand.Intn(1024)

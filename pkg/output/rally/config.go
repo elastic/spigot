@@ -11,13 +11,13 @@ type config struct {
 
 func defaultConfig() config {
 	return config{
-		Type: OutputName,
+		Type: Name,
 	}
 }
 
 func (c *config) Validate() error {
-	if c.Type != OutputName {
-		return fmt.Errorf("%s is not a valid type for %s", c.Type, OutputName)
+	if c.Type != Name {
+		return fmt.Errorf("%s is not a valid type for %s", c.Type, Name)
 	}
 	if c.Filename != "" && (c.Directory != "" || c.Pattern != "") {
 		return fmt.Errorf("if filename is set, directory and pattern must not be")

@@ -47,9 +47,9 @@ func TestWrite(t *testing.T) {
 		var buf bytes.Buffer
 		var wc = &myWriteCloser{&buf}
 
-		f := &FileOutput{
-			delimiter: tc.delim,
-			pWC:       wc,
+		f := &Output{
+			delimiter:    tc.delim,
+			pWriteCloser: wc,
 		}
 		for _, line := range tc.input {
 			_, err := f.Write([]byte(line))
