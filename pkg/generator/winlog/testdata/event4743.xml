@@ -1,0 +1,28 @@
+<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+  <System>
+    <Provider Name="Microsoft-Windows-Security-Auditing" GUID="{54849625-5478-4994-A5BA-3E3B0328C30D}"></Provider>
+    <EventID>4743</EventID>
+    <Version>0</Version>
+    <Level>0</Level>
+    <Task>1211</Task>
+    <Opcode>0</Opcode>
+    <Keywords>0x8020000000000000</Keywords>
+    <TimeCreated SystemTime="1970-01-02T03:04:05+07:00"></TimeCreated>
+    <EventRecordID>3916589616287113937</EventRecordID>
+    <Correlation></Correlation>
+    <Execution ProcessID="53638" ThreadID="52025"></Execution>
+    <Channel>Security</Channel>
+    <Computer>COMPUTER-887.DOMAIN-1</Computer>
+    <Security></Security>
+  </System>
+  <EventData>
+    <Data Name="TargetUserSid">S-1-5-21-583324308-958990240-413002649-31942</Data>
+    <Data Name="TargetUserName">COMPUTER-887$</Data>
+    <Data Name="TargetDomainName">DOMAIN-1</Data>
+    <Data Name="SubjectUserSid">S-1-5-21-2515093031-3125901622-2210689492-8536</Data>
+    <Data Name="SubjectUserName">user47</Data>
+    <Data Name="SubjectDomainName">DOMAIN-1</Data>
+    <Data Name="SubjectLogonId">0x951a</Data>
+    <Data Name="PrivilegeList">-</Data>
+  </EventData>
+</Event>

@@ -1,0 +1,47 @@
+<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+  <System>
+    <Provider Name="Microsoft-Windows-Security-Auditing" GUID="{54849625-5478-4994-A5BA-3E3B0328C30D}"></Provider>
+    <EventID>4624</EventID>
+    <Version>0</Version>
+    <Level>0</Level>
+    <Task>19911</Task>
+    <Opcode>0</Opcode>
+    <Keywords>0x8020000000000000</Keywords>
+    <TimeCreated SystemTime="1970-01-02T03:04:05+07:00"></TimeCreated>
+    <EventRecordID>13260572831089785859</EventRecordID>
+    <Correlation></Correlation>
+    <Execution ProcessID="34177" ThreadID="53638"></Execution>
+    <Channel>Security</Channel>
+    <Computer>COMPUTER-81</Computer>
+    <Security></Security>
+  </System>
+  <EventData>
+    <Data Name="SubjectUserSid">S-1-5-18</Data>
+    <Data Name="SubjectUserName">COMPUTER-81$</Data>
+    <Data Name="SubjectDomainName">WORKGROUP</Data>
+    <Data Name="SubjectLogonId">0xcb39</Data>
+    <Data Name="TargetUserSid">S-1-5-21-583324308-958990240-413002649-31942</Data>
+    <Data Name="TargetUserName">user87</Data>
+    <Data Name="TargetDomainName">COMPUTER-81</Data>
+    <Data Name="TargetLogonId">0x5aaf</Data>
+    <Data Name="LogonType">2</Data>
+    <Data Name="LogonProcessName">User32</Data>
+    <Data Name="AuthenticationPackageName">Negotiate</Data>
+    <Data Name="WorkstationName">COMPUTER-81</Data>
+    <Data Name="LogonGuid">{00000000-0000-0000-0000-000000000000}</Data>
+    <Data Name="TransmittedServices">-</Data>
+    <Data Name="LmPackageName">-</Data>
+    <Data Name="KeyLength">0</Data>
+    <Data Name="ProcessId">0xffa2</Data>
+    <Data Name="ProcessName">C:\\Windows\\System32\\svchost.exe</Data>
+    <Data Name="IpAddress">227.191.114.97</Data>
+    <Data Name="IpPort">8536</Data>
+    <Data Name="ImpersonationLevel">%%1833</Data>
+    <Data Name="RestrictedAdminMode">-</Data>
+    <Data Name="TargetOutboundUserName">-</Data>
+    <Data Name="TargetOutboundDomainName">-</Data>
+    <Data Name="VirtualAccount">%%1843</Data>
+    <Data Name="TargetLinkedLogonId">0x0</Data>
+    <Data Name="ElevatedToken">%%1842</Data>
+  </EventData>
+</Event>

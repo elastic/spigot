@@ -1,0 +1,48 @@
+<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+  <System>
+    <Provider Name="Microsoft-Windows-Security-Auditing" GUID="{54849625-5478-4994-A5BA-3E3B0328C30D}"></Provider>
+    <EventID>4741</EventID>
+    <Version>0</Version>
+    <Level>0</Level>
+    <Task>1211</Task>
+    <Opcode>0</Opcode>
+    <Keywords>0x8020000000000000</Keywords>
+    <TimeCreated SystemTime="1970-01-02T03:04:05+07:00"></TimeCreated>
+    <EventRecordID>3916589616287113937</EventRecordID>
+    <Correlation></Correlation>
+    <Execution ProcessID="53638" ThreadID="52025"></Execution>
+    <Channel>Security</Channel>
+    <Computer>COMPUTER-887.DOMAIN-1</Computer>
+    <Security></Security>
+  </System>
+  <EventData>
+    <Data Name="TargetUserSid">S-1-5-21-583324308-958990240-413002649-31942</Data>
+    <Data Name="TargetUserName">COMPUTER-887$</Data>
+    <Data Name="TargetDomainName">DOMAIN-1</Data>
+    <Data Name="SubjectUserSid">S-1-5-21-2515093031-3125901622-2210689492-8536</Data>
+    <Data Name="SubjectUserName">user47</Data>
+    <Data Name="SubjectDomainName">DOMAIN-1</Data>
+    <Data Name="SubjectLogonId">0x951a</Data>
+    <Data Name="PrivilegeList">-</Data>
+    <Data Name="SamAccountName">COMPUTER-887$</Data>
+    <Data Name="DisplayName">-</Data>
+    <Data Name="UserPrincipalName">-</Data>
+    <Data Name="HomeDirectory">-</Data>
+    <Data Name="HomePath">-</Data>
+    <Data Name="ScriptPath">-</Data>
+    <Data Name="ProfilePath">-</Data>
+    <Data Name="UserWorkstations">-</Data>
+    <Data Name="PasswordLastSet">2/1/1970 03:04:05 AM</Data>
+    <Data Name="AccountExpires">%%1794</Data>
+    <Data Name="PrimaryGroupId">1211</Data>
+    <Data Name="AllowedToDelegateTo">-</Data>
+    <Data Name="OldUacValue">0x0</Data>
+    <Data Name="NewUacValue">0x80</Data>
+    <Data Name="UserAccountControl">%%2087</Data>
+    <Data Name="UserParameters">-</Data>
+    <Data Name="SidHistory">-</Data>
+    <Data Name="LogonHours">%%1793</Data>
+    <Data Name="DnsHostName">COMPUTER-887.DOMAIN-1</Data>
+    <Data Name="ServicePrincipalNames">HOST/COMPUTER-887.DOMAIN-1 RestrictedKrbHost/COMPUTER-887.DOMAIN-1 HOST/COMPUTER-887 RestrictedKrbHost/COMPUTER-887</Data>
+  </EventData>
+</Event>
