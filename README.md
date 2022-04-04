@@ -4,9 +4,12 @@ A small utility to write synthetic logs to different destinations.
 
 Currently supported log formats are:
 
+- AWS Firewall
 - AWS vpcflow
+- Common Log Format
 - Cisco ASA
 - Fortinet Firewall
+- Windows Event XML (winlog)
 
 Currently supported destinations are:
 
