@@ -9,6 +9,7 @@ Currently supported log formats are:
 - Common Log Format
 - Cisco ASA
 - Fortinet Firewall
+- Generic CEF
 - Windows Event XML (winlog)
 
 Currently supported destinations are:

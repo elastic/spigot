@@ -5,6 +5,7 @@ package include
 import (
 	_ "github.com/leehinman/spigot/pkg/generator/aws/firewall"
 	_ "github.com/leehinman/spigot/pkg/generator/aws/vpcflow"
+	_ "github.com/leehinman/spigot/pkg/generator/cef"
 	_ "github.com/leehinman/spigot/pkg/generator/cisco/asa"
 	_ "github.com/leehinman/spigot/pkg/generator/clf"
 	_ "github.com/leehinman/spigot/pkg/generator/fortinet/firewall"
