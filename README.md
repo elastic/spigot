@@ -8,6 +8,7 @@ Currently supported log formats are:
 - AWS vpcflow
 - Common Log Format
 - Cisco ASA
+- Citrix CEF
 - Fortinet Firewall
 - Generic CEF
 - Windows Event XML (winlog)
