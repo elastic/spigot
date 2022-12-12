@@ -72,7 +72,7 @@ func New(cfg *ucfg.Config) (s output.Output, err error) {
 	})
 	var buf bytes.Buffer
 	gw := gzip.NewWriter(&buf)
-	key := fmt.Sprintf("%s_%19d_%3d.gz", c.Prefix, time.Now().UnixNano(), rand.Intn(1000))
+	key := fmt.Sprintf("%s_%19d_%03d.gz", c.Prefix, time.Now().UnixNano(), rand.Intn(1000))
 
 	s = &S3Output{
 		delimiter: c.Delimiter,
