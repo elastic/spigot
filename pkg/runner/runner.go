@@ -1,31 +1,31 @@
-//Package runner provides the glue to link a generator to an output and to execute.
+// Package runner provides the glue to link a generator to an output and to execute.
 //
-//  Configuration.
+//	Configuration.
 //
-//  "generator" and "output" are required, and are the configs of the
-//  specific types.
+//	"generator" and "output" are required, and are the configs of the
+//	specific types.
 //
-//  "records" is optional, default is 1024.  This is the number of log
-//  records to write per interval.
+//	"records" is optional, default is 1024.  This is the number of log
+//	records to write per interval.
 //
-//  "interval" is optional and is a go duration.  If no interval is
-//  given then the runner is executed once.  If an interval is given
-//  then at each interval the runner is executed.
+//	"interval" is optional and is a go duration.  If no interval is
+//	given then the runner is executed once.  If an interval is given
+//	then at each interval the runner is executed.
 //
-//  Example:
+//	Example:
 //
-//    generator:
-//      type: "aws:vpcflow"
-//    output:
-//      type: file
-//      directory: "/var/tmp"
-//      pattern: "spigot_asa_*.log"
-//      delimiter: "\n"
-//    interval: 5s
-//    records: 2
+//	  generator:
+//	    type: "aws:vpcflow"
+//	  output:
+//	    type: file
+//	    directory: "/var/tmp"
+//	    pattern: "spigot_asa_*.log"
+//	    delimiter: "\n"
+//	  interval: 5s
+//	  records: 2
 //
-//  This would write 2 vpcflow log entries to a file in the
-//  /var/tmp/spigot_asa_<random>.log file every 5 seconds.
+//	This would write 2 vpcflow log entries to a file in the
+//	/var/tmp/spigot_asa_<random>.log file every 5 seconds.
 package runner
 
 import (
@@ -70,7 +70,6 @@ func New(cfg *ucfg.Config) (Runner, error) {
 	r.config = c
 
 	o, err := output.New(c.Output)
-
 	if err != nil {
 		return r, err
 	}
@@ -106,6 +105,9 @@ func (r *Runner) Execute() error {
 		}
 		if r.config.Interval == 0 {
 			break
+		}
+		if err := r.output.NewInterval(); err != nil {
+			return err
 		}
 	}
 	r.output.Close()

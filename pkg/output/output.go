@@ -11,6 +11,7 @@ import (
 type Output interface {
 	Write(p []byte) (n int, err error)
 	Close() error
+	NewInterval() error
 }
 
 type config struct {

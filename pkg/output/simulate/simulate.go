@@ -5,16 +5,16 @@
 // Configuration file supports either writing to a file or a directory
 // with random names.
 //
-//   output:
-//     type: simulate
-//     filename: "/var/tmp/simulate.json"
+//	output:
+//	  type: simulate
+//	  filename: "/var/tmp/simulate.json"
 //
 // or
 //
-//  output:
-//    type: simulate
-//    directory: "/var/tmp"
-//    pattern: "simulate_*"
+//	output:
+//	  type: simulate
+//	  directory: "/var/tmp"
+//	  pattern: "simulate_*"
 //
 // directory and pattern are used in os.CreateTemp call
 package simulate
@@ -36,6 +36,8 @@ const Name = "simulate"
 type Output struct {
 	events       []event
 	pWriteCloser io.WriteCloser
+	directory    string
+	pattern      string
 }
 
 type event struct {
@@ -74,7 +76,13 @@ func New(cfg *ucfg.Config) (output.Output, error) {
 	}
 	events := []event{}
 
-	return &Output{pWriteCloser: pOsFile, events: events}, nil
+	out := Output{
+		pWriteCloser: pOsFile,
+		events:       events,
+		directory:    c.Directory,
+		pattern:      c.Pattern,
+	}
+	return &out, nil
 }
 
 // Write formats the event and adds it to the internal slice of events.
@@ -109,4 +117,20 @@ func (r *Output) Close() error {
 	}
 
 	return r.pWriteCloser.Close()
+}
+
+func (o *Output) NewInterval() error {
+	if o.directory == "" && o.pattern == "" {
+		return nil
+	}
+	if err := o.Close(); err != nil {
+		return err
+	}
+	pOsFile, err := os.CreateTemp(o.directory, o.pattern)
+	if err != nil {
+		return err
+	}
+	o.pWriteCloser = pOsFile
+	o.events = o.events[:0]
+	return nil
 }

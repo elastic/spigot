@@ -4,18 +4,18 @@
 // with random names.  delimiter is required.  This is the string to
 // write between log entries.  Normally a new line "\n"
 //
-//   output:
-//     type: file
-//     filename: "/var/tmp/rally.ndjson"
-//     delimiter: "/n"
+//	output:
+//	  type: file
+//	  filename: "/var/tmp/rally.ndjson"
+//	  delimiter: "/n"
 //
 // or
 //
-//  output:
-//    type: file
-//    directory: "/var/tmp"
-//    pattern: "rally_*"
-//    delimiter: "\r\n"
+//	output:
+//	  type: file
+//	  directory: "/var/tmp"
+//	  pattern: "rally_*"
+//	  delimiter: "\r\n"
 //
 // directory and pattern are used in os.CreateTemp call
 package file
@@ -37,6 +37,8 @@ const Name = "file"
 type Output struct {
 	delimiter    string
 	pWriteCloser io.WriteCloser
+	directory    string
+	pattern      string
 }
 
 func init() {
@@ -65,7 +67,13 @@ func New(cfg *ucfg.Config) (output.Output, error) {
 			return nil, err
 		}
 	}
-	return &Output{pWriteCloser: pOsFile, delimiter: c.Delimiter}, nil
+	out := Output{
+		pWriteCloser: pOsFile,
+		delimiter:    c.Delimiter,
+		directory:    c.Directory,
+		pattern:      c.Pattern,
+	}
+	return &out, nil
 }
 
 // Write writes the log entry to the file handle that is opened with
@@ -82,4 +90,19 @@ func (o *Output) Write(b []byte) (n int, err error) {
 // Close closes the io.WriteCloser.  Writes after this will fail.
 func (o *Output) Close() error {
 	return o.pWriteCloser.Close()
+}
+
+func (o *Output) NewInterval() error {
+	if o.directory == "" && o.pattern == "" {
+		return nil
+	}
+	if err := o.Close(); err != nil {
+		return err
+	}
+	pOsFile, err := os.CreateTemp(o.directory, o.pattern)
+	if err != nil {
+		return err
+	}
+	o.pWriteCloser = pOsFile
+	return nil
 }

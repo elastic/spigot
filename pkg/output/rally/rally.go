@@ -2,16 +2,16 @@
 //
 // Configuration file supports either writing to a file or a directory with random names.
 //
-//   output:
-//     type: rally
-//     filename: "/var/tmp/rally.ndjson"
+//	output:
+//	  type: rally
+//	  filename: "/var/tmp/rally.ndjson"
 //
 // or
 //
-//  output:
-//    type: rally
-//    directory: "/var/tmp"
-//    pattern: "rally_*"
+//	output:
+//	  type: rally
+//	  directory: "/var/tmp"
+//	  pattern: "rally_*"
 //
 // directory and pattern are used in os.CreateTemp call
 package rally
@@ -32,6 +32,8 @@ const Name = "rally"
 // log entries will be written.
 type Output struct {
 	pWriteCloser io.WriteCloser
+	directory    string
+	pattern      string
 }
 
 type entry struct {
@@ -64,7 +66,12 @@ func New(cfg *ucfg.Config) (output.Output, error) {
 			return nil, err
 		}
 	}
-	return &Output{pWriteCloser: pOsFile}, nil
+	out := Output{
+		pWriteCloser: pOsFile,
+		directory:    c.Directory,
+		pattern:      c.Pattern,
+	}
+	return &out, nil
 }
 
 // Write formats the log for rally and writes the data to the file
@@ -88,4 +95,19 @@ func (r *Output) Write(b []byte) (int, error) {
 // Close closes the io.WriteCloser.  Writes after this will fail.
 func (r *Output) Close() error {
 	return r.pWriteCloser.Close()
+}
+
+func (o *Output) NewInterval() error {
+	if o.directory == "" && o.pattern == "" {
+		return nil
+	}
+	if err := o.Close(); err != nil {
+		return err
+	}
+	pOsFile, err := os.CreateTemp(o.directory, o.pattern)
+	if err != nil {
+		return err
+	}
+	o.pWriteCloser = pOsFile
+	return nil
 }

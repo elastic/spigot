@@ -4,12 +4,12 @@
 //
 // "delimiter" is optional and controls the character written between log entries, by default "/n"
 //
-//   output:
-//     type: aws:s3
-//     bucket: "bucket_name"
-//     region: "us-west"
-//     delimiter: "/n"
-//     prefix: "my_name"  ;; my_name_0123456789_001.gz
+//	output:
+//	  type: aws:s3
+//	  bucket: "bucket_name"
+//	  region: "us-west"
+//	  delimiter: "/n"
+//	  prefix: "my_name"  ;; my_name_0123456789_001.gz
 //
 // Assumptions:
 //
@@ -48,6 +48,7 @@ type S3Output struct {
 	delimiter string
 	bucket    string
 	key       string
+	prefix    string
 	buf       *bytes.Buffer
 	gw        *gzip.Writer
 }
@@ -78,6 +79,7 @@ func New(cfg *ucfg.Config) (s output.Output, err error) {
 		delimiter: c.Delimiter,
 		bucket:    c.Bucket,
 		key:       key,
+		prefix:    c.Prefix,
 		buf:       &buf,
 		gw:        gw,
 	}
@@ -104,4 +106,12 @@ func (s *S3Output) Close() error {
 		Body:   s.buf,
 	})
 	return err
+}
+
+func (s *S3Output) NewInterval() error {
+	s.Close()
+	s.buf.Reset()
+	s.gw = gzip.NewWriter(s.buf)
+	s.key = fmt.Sprintf("%s_%19d_%3d.gz", s.prefix, time.Now().UnixNano(), rand.Intn(1000))
+	return nil
 }

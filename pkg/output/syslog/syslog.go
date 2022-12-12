@@ -7,11 +7,11 @@
 // "severity" is optional and defaults to LOG.EMERG
 // "tag" is optional tag to add to message
 //
-//   output:
-//     type: syslog
-//     network: tcp
-//     host: localhost
-//     port: 1234
+//	output:
+//	  type: syslog
+//	  network: tcp
+//	  host: localhost
+//	  port: 1234
 package syslog
 
 import (
@@ -132,4 +132,8 @@ func getPriority(facility string, severity string) syslog.Priority {
 	}
 
 	return s | f
+}
+
+func (s *Output) NewInterval() error {
+	return nil
 }
