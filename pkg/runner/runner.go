@@ -110,6 +110,5 @@ func (r *Runner) Execute() error {
 			return err
 		}
 	}
-	r.output.Close()
-	return nil
+	return r.output.Close()
 }
