@@ -16,5 +16,4 @@ import (
 	_ "github.com/leehinman/spigot/pkg/output/s3"
 	_ "github.com/leehinman/spigot/pkg/output/shipper"
 	_ "github.com/leehinman/spigot/pkg/output/simulate"
-	_ "github.com/leehinman/spigot/pkg/output/syslog"
 )
