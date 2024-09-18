@@ -2,17 +2,18 @@
 //
 // Configuration:
 //
-//   event_id: (number, optional) If provided, generated events using this ID.
-//             Must be one of the registered event IDs. See 'eventRandomizers'
-//             for the list of valid IDs. If not provided, the generator will
-//             randomly select from the available list for each record.
+//	event_id: (number, optional) If provided, generated events using this ID.
+//	          Must be one of the registered event IDs. See 'eventRandomizers'
+//	          for the list of valid IDs. If not provided, the generator will
+//	          randomly select from the available list for each record.
 //
-//   - generator:
-//       type: winlog
-//       event_id: 4768
+//	- generator:
+//	    type: winlog
+//	    event_id: 4768
 package winlog
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"math/rand"
@@ -21,6 +22,7 @@ import (
 
 	"github.com/elastic/go-ucfg"
 	"github.com/leehinman/spigot/pkg/generator"
+	"github.com/leehinman/spigot/pkg/output/winlog"
 )
 
 const Name = "winlog"
@@ -59,6 +61,18 @@ type Event struct {
 	Security    Security    `xml:"System>Security"`
 
 	EventData EventData `xml:"EventData"`
+}
+
+func (e *Event) AsTemplate() winlog.EventTemplate {
+	messages := make([]string, len(e.EventData.Data))
+	for i, data := range e.EventData.Data {
+		messages[i] = data.Value
+	}
+	return winlog.EventTemplate{
+		EventType: uint16(e.Level),
+		EventID:   e.EventID.ID,
+		Messages:  messages,
+	}
 }
 
 // Provider identifies the provider that logged the event.
@@ -129,6 +143,7 @@ type Generator struct {
 
 	eventID    *int
 	staticTime *time.Time
+	render     func(Event) ([]byte, error)
 }
 
 // Next produces the next Windows Event XML record.
@@ -147,12 +162,7 @@ func (g *Generator) Next() ([]byte, error) {
 
 	g.Event = fn(g)
 
-	data, err := xml.MarshalIndent(&g.Event, "", "  ")
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return g.render(g.Event)
 }
 
 func (g *Generator) getTime() time.Time {
@@ -173,6 +183,16 @@ func New(cfg *ucfg.Config) (generator.Generator, error) {
 	g := Generator{}
 	if c.EventID > 0 {
 		g.eventID = &c.EventID
+	}
+
+	if c.AsTemplate {
+		g.render = func(e Event) ([]byte, error) {
+			return json.Marshal(e.AsTemplate())
+		}
+	} else {
+		g.render = func(e Event) ([]byte, error) {
+			return xml.MarshalIndent(&g.Event, "", "  ")
+		}
 	}
 
 	return &g, nil
