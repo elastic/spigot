@@ -5,8 +5,9 @@ import (
 )
 
 type config struct {
-	Type    string `config:"type" validate:"required"`
-	EventID int    `config:"event_id"`
+	Type       string `config:"type" validate:"required"`
+	EventID    int    `config:"event_id"`
+	AsTemplate bool   `config:"as_template"`
 }
 
 func defaultConfig() config {

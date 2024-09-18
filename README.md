@@ -19,6 +19,7 @@ Currently supported destinations are:
 - AWS S3 bucket
 - Syslog (TCP or UDP)
 - Rally (ndjson to local file)
+- Windows Event Logs (winlog) - Only supported on windows
 
 ## Command Line Flags
 
