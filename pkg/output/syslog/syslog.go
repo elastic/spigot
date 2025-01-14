@@ -14,6 +14,7 @@
 //	  port: 1234
 
 //go:build !windows
+
 package syslog
 
 import (
@@ -22,7 +23,7 @@ import (
 	"net"
 
 	"github.com/elastic/go-ucfg"
-	"github.com/leehinman/spigot/pkg/output"
+	"github.com/elastic/spigot/pkg/output"
 )
 
 // Name is the name used in the configuration file and the registry.
@@ -30,7 +31,9 @@ const Name = "syslog"
 
 // Output hosts the WriteCloser
 type Output struct {
-	pWC io.WriteCloser
+	pWC         io.WriteCloser
+	name        string
+	destination string
 }
 
 func init() {
@@ -49,9 +52,21 @@ func New(cfg *ucfg.Config) (s output.Output, err error) {
 		return nil, err
 	}
 	s = &Output{
-		pWC: sysLog,
+		pWC:         sysLog,
+		name:        c.Network + "_" + c.Host + "_" + c.Port,
+		destination: c.Network + "://" + c.Host + ":" + c.Port,
 	}
 	return s, nil
+}
+
+// Name returns the name of the output
+func (s Output) Name() string {
+	return s.name
+}
+
+// Destination returns URI
+func (s Output) Destination() string {
+	return s.destination
 }
 
 // Write sends the log message to the syslog server

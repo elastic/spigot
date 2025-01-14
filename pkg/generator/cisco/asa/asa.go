@@ -2,9 +2,9 @@
 //
 // Configuration file supports including timestamps in log messages
 //
-//   generator:
-//     type: cisco:asa
-//     include_timestamp: true
+//	generator:
+//	  type: cisco:asa
+//	  include_timestamp: true
 package asa
 
 import (
@@ -17,8 +17,8 @@ import (
 	"time"
 
 	"github.com/elastic/go-ucfg"
-	"github.com/leehinman/spigot/pkg/generator"
-	"github.com/leehinman/spigot/pkg/random"
+	"github.com/elastic/spigot/pkg/generator"
+	"github.com/elastic/spigot/pkg/random"
 )
 
 // Name is the name of the generator in the configuration file and registry

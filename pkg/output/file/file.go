@@ -21,11 +21,11 @@
 package file
 
 import (
-	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/elastic/go-ucfg"
-	"github.com/leehinman/spigot/pkg/output"
+	"github.com/elastic/spigot/pkg/output"
 )
 
 // OutputName is the name of the output in the configuration file and registry
@@ -35,8 +35,9 @@ const Name = "file"
 // entries will be written.  It also stores the delimiter that will be
 // added between log entries.
 type Output struct {
+	name         string
 	delimiter    string
-	pWriteCloser io.WriteCloser
+	pWriteCloser *os.File
 	directory    string
 	pattern      string
 }
@@ -50,6 +51,7 @@ func init() {
 func New(cfg *ucfg.Config) (output.Output, error) {
 	var pOsFile *os.File
 	var err error
+	var name string
 
 	c := defaultConfig()
 	if err = cfg.Unpack(&c); err != nil {
@@ -60,20 +62,36 @@ func New(cfg *ucfg.Config) (output.Output, error) {
 		if err != nil {
 			return nil, err
 		}
+		name = Name + "_" + filepath.Join(c.Directory, c.Pattern)
 	}
 	if c.Filename != "" {
 		pOsFile, err = os.Create(c.Filename)
 		if err != nil {
 			return nil, err
 		}
+		name = Name + "_" + pOsFile.Name()
 	}
 	out := Output{
 		pWriteCloser: pOsFile,
 		delimiter:    c.Delimiter,
 		directory:    c.Directory,
 		pattern:      c.Pattern,
+		name:         name,
 	}
 	return &out, nil
+}
+
+// Name returns the name of the output
+func (o *Output) Name() string {
+	return o.name
+}
+
+// Destination return the path to the file being written to
+func (o *Output) Destination() string {
+	if o.pWriteCloser != nil {
+		return o.pWriteCloser.Name()
+	}
+	return ""
 }
 
 // Write writes the log entry to the file handle that is opened with

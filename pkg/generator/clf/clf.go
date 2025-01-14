@@ -2,12 +2,12 @@
 //
 // Configuration:
 //
-//   combined: (bool, optional) If true, generate Combined Log Format records,
-//             which add referer and user-agent fields.
+//	combined: (bool, optional) If true, generate Combined Log Format records,
+//	          which add referer and user-agent fields.
 //
-//   - generator:
-//       type: clf
-//       combined: true
+//	- generator:
+//	    type: clf
+//	    combined: true
 package clf
 
 import (
@@ -20,8 +20,8 @@ import (
 	"time"
 
 	"github.com/elastic/go-ucfg"
-	"github.com/leehinman/spigot/pkg/generator"
-	"github.com/leehinman/spigot/pkg/random"
+	"github.com/elastic/spigot/pkg/generator"
+	"github.com/elastic/spigot/pkg/random"
 )
 
 const (

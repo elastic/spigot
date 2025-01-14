@@ -33,7 +33,7 @@ import (
 	"github.com/andrewkroh/sys/windows/svc/eventlog"
 	"github.com/elastic/beats/v7/winlogbeat/sys/wineventlog"
 	"github.com/elastic/go-ucfg"
-	"github.com/leehinman/spigot/pkg/output"
+	"github.com/elastic/spigot/pkg/output"
 	"go.uber.org/multierr"
 )
 
@@ -42,7 +42,9 @@ const Name = "winlog"
 
 type Output struct {
 	config
-	log *eventlog.Log
+	log         *eventlog.Log
+	name        string
+	destination string
 }
 
 func init() {
@@ -71,9 +73,21 @@ func New(cfg *ucfg.Config) (output.Output, error) {
 	}
 
 	return &Output{
-		config: c,
-		log:    log,
+		config:      c,
+		log:         log,
+		name:        c.Provider + "_" + c.Source,
+		destination: c.Provider,
 	}, nil
+}
+
+// Name returns output name
+func (o *Output) Name() string {
+	return o.name
+}
+
+// Destination returns where
+func (o *Output) Destination() string {
+	return o.destination
 }
 
 func (o *Output) Write(b []byte) (n int, err error) {

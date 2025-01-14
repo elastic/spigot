@@ -32,7 +32,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/elastic/go-ucfg"
-	"github.com/leehinman/spigot/pkg/output"
+	"github.com/elastic/spigot/pkg/output"
 )
 
 // Name is the name used in the configuration file and the registry.
@@ -45,6 +45,7 @@ var (
 
 // S3Output holds config for writing to S3.
 type S3Output struct {
+	name      string
 	delimiter string
 	bucket    string
 	key       string
@@ -82,8 +83,19 @@ func New(cfg *ucfg.Config) (s output.Output, err error) {
 		prefix:    c.Prefix,
 		buf:       &buf,
 		gw:        gw,
+		name:      c.Region + "_" + c.Bucket + "_" + c.Prefix,
 	}
 	return s, nil
+}
+
+// Name returns name of output
+func (s *S3Output) Name() string {
+	return s.name
+}
+
+// Destination return the path to the file being written to
+func (s *S3Output) Destination() string {
+	return s.key
 }
 
 // Write writes log entry to internal buffer

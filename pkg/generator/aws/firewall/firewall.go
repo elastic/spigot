@@ -3,12 +3,12 @@
 //
 // Configuration:
 //
-//	 event_type: Specify the type of event to generate, or leave blank for random.
-//	             Valid values are: alert, netflow.
+//		 event_type: Specify the type of event to generate, or leave blank for random.
+//		             Valid values are: alert, netflow.
 //
-//   - generator:
-//       type: aws:firewall
-//	     event_type: netflow
+//	  - generator:
+//	      type: aws:firewall
+//		     event_type: netflow
 package firewall
 
 import (
@@ -20,8 +20,8 @@ import (
 	"time"
 
 	"github.com/elastic/go-ucfg"
-	"github.com/leehinman/spigot/pkg/generator"
-	"github.com/leehinman/spigot/pkg/random"
+	"github.com/elastic/spigot/pkg/generator"
+	"github.com/elastic/spigot/pkg/random"
 )
 
 // Name is the name used in the configuration file and the registry.

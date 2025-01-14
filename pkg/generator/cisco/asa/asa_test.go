@@ -5,7 +5,7 @@ import (
 	"testing"
 	"text/template"
 
-	"github.com/leehinman/spigot/pkg/generator"
+	"github.com/elastic/spigot/pkg/generator"
 	"github.com/stretchr/testify/assert"
 )
 

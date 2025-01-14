@@ -3,7 +3,7 @@
 // For the configuration file there are no options so only the following is needed:
 //
 //   - generator:
-//       type: "fortinet:firewall"
+//     type: "fortinet:firewall"
 package firewall
 
 import (
@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"github.com/elastic/go-ucfg"
-	"github.com/leehinman/spigot/pkg/generator"
-	"github.com/leehinman/spigot/pkg/random"
+	"github.com/elastic/spigot/pkg/generator"
+	"github.com/elastic/spigot/pkg/random"
 )
 
 // Name is the name used in the configuration file and the registry.
