@@ -21,11 +21,11 @@ package simulate
 
 import (
 	"encoding/json"
-	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/elastic/go-ucfg"
-	"github.com/leehinman/spigot/pkg/output"
+	"github.com/elastic/spigot/pkg/output"
 )
 
 // Name is the name of the output in the configuration file and registry
@@ -35,9 +35,10 @@ const Name = "simulate"
 // log entries will be written.
 type Output struct {
 	events       []event
-	pWriteCloser io.WriteCloser
+	pWriteCloser *os.File
 	directory    string
 	pattern      string
+	name         string
 }
 
 type event struct {
@@ -57,6 +58,7 @@ func init() {
 func New(cfg *ucfg.Config) (output.Output, error) {
 	var pOsFile *os.File
 	var err error
+	var name string
 
 	c := defaultConfig()
 	if err := cfg.Unpack(&c); err != nil {
@@ -67,12 +69,14 @@ func New(cfg *ucfg.Config) (output.Output, error) {
 		if err != nil {
 			return nil, err
 		}
+		name = Name + "_" + filepath.Join(c.Directory, c.Pattern)
 	}
 	if c.Filename != "" {
 		pOsFile, err = os.Create(c.Filename)
 		if err != nil {
 			return nil, err
 		}
+		name = Name + "_" + pOsFile.Name()
 	}
 	events := []event{}
 
@@ -81,8 +85,22 @@ func New(cfg *ucfg.Config) (output.Output, error) {
 		events:       events,
 		directory:    c.Directory,
 		pattern:      c.Pattern,
+		name:         name,
 	}
 	return &out, nil
+}
+
+// Name returns name of output
+func (r *Output) Name() string {
+	return r.name
+}
+
+// Destination return the path to the file being written to
+func (r *Output) Destination() string {
+	if r.pWriteCloser != nil {
+		return r.pWriteCloser.Name()
+	}
+	return ""
 }
 
 // Write formats the event and adds it to the internal slice of events.

@@ -18,11 +18,11 @@ package rally
 
 import (
 	"encoding/json"
-	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/elastic/go-ucfg"
-	"github.com/leehinman/spigot/pkg/output"
+	"github.com/elastic/spigot/pkg/output"
 )
 
 // Name is the name of the output in the configuration file and registry
@@ -31,7 +31,8 @@ const Name = "rally"
 // RallyOutput stores pointer to an io.WriteCloser.  This is where the
 // log entries will be written.
 type Output struct {
-	pWriteCloser io.WriteCloser
+	name         string
+	pWriteCloser *os.File
 	directory    string
 	pattern      string
 }
@@ -49,6 +50,7 @@ func init() {
 func New(cfg *ucfg.Config) (output.Output, error) {
 	var pOsFile *os.File
 	var err error
+	var name string
 
 	c := defaultConfig()
 	if err := cfg.Unpack(&c); err != nil {
@@ -59,19 +61,35 @@ func New(cfg *ucfg.Config) (output.Output, error) {
 		if err != nil {
 			return nil, err
 		}
+		name = Name + "_" + filepath.Join(c.Directory, c.Pattern)
 	}
 	if c.Filename != "" {
 		pOsFile, err = os.Create(c.Filename)
 		if err != nil {
 			return nil, err
 		}
+		name = Name + "_" + pOsFile.Name()
 	}
 	out := Output{
 		pWriteCloser: pOsFile,
 		directory:    c.Directory,
 		pattern:      c.Pattern,
+		name:         name,
 	}
 	return &out, nil
+}
+
+// Name return the name of the output
+func (r *Output) Name() string {
+	return r.name
+}
+
+// Destination return the path to the file being written to
+func (o *Output) Destination() string {
+	if o.pWriteCloser != nil {
+		return o.pWriteCloser.Name()
+	}
+	return ""
 }
 
 // Write formats the log for rally and writes the data to the file

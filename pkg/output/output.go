@@ -12,6 +12,8 @@ type Output interface {
 	Write(p []byte) (n int, err error)
 	Close() error
 	NewInterval() error
+	Name() string
+	Destination() string
 }
 
 type config struct {

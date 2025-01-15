@@ -1,7 +1,7 @@
 // Package cef implements the generator for Citrix CEF logs.
 //
-//   generator:
-//     type: citrix:cef
+//	generator:
+//	  type: citrix:cef
 package cef
 
 import (
@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"github.com/elastic/go-ucfg"
-	"github.com/leehinman/spigot/pkg/generator"
-	"github.com/leehinman/spigot/pkg/random"
+	"github.com/elastic/spigot/pkg/generator"
+	"github.com/elastic/spigot/pkg/random"
 )
 
 // Details from https://docs.citrix.com/en-us/citrix-adc/downloads/cef-log-components.pdf,

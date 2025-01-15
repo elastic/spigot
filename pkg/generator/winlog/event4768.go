@@ -3,7 +3,7 @@ package winlog
 import (
 	"strconv"
 
-	"github.com/leehinman/spigot/pkg/random"
+	"github.com/elastic/spigot/pkg/random"
 )
 
 const event4768 = 4768

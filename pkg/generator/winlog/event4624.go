@@ -4,7 +4,7 @@ import (
 	"math/rand"
 	"strconv"
 
-	"github.com/leehinman/spigot/pkg/random"
+	"github.com/elastic/spigot/pkg/random"
 )
 
 const event4624 = 4624
