@@ -44,8 +44,8 @@ func readGoldenFile(t *testing.T, filename string, expected []byte, update bool)
 }
 
 // Update golden files by running:
-//     go test ./pkg/generator/winlog -update
 //
+//	go test ./pkg/generator/winlog -update
 func TestGenerator_Next(t *testing.T) {
 	tests := map[string]struct {
 		config       map[string]interface{}
@@ -88,7 +88,7 @@ func TestGenerator_Next(t *testing.T) {
 			serviceSIDMap = map[string]string{}
 			userSIDMap = map[string]string{}
 
-			g, err := New(ucfg.MustNewFrom(tc.config))
+			g, err := New(ucfg.MustNewFrom(tc.config), 0)
 			assert.NoError(t, err)
 
 			g.(*Generator).staticTime = &testTime

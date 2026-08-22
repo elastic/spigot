@@ -2,9 +2,9 @@
 //
 // Configuration file supports including timestamps in log messages
 //
-//   generator:
-//     type: cisco:asa
-//     include_timestamp: true
+//	generator:
+//	  type: cisco:asa
+//	  include_timestamp: true
 package asa
 
 import (
@@ -113,7 +113,7 @@ func init() {
 }
 
 // New is Factory for the asa generator
-func New(cfg *ucfg.Config) (generator.Generator, error) {
+func New(cfg *ucfg.Config, _ int64) (generator.Generator, error) {
 	c := defaultConfig()
 	if err := cfg.Unpack(&c); err != nil {
 		return nil, err

@@ -8,7 +8,7 @@ import (
 
 // Factory is the function signature of each generators New function.
 // Given a config it returns a generator or an error.
-type Factory = func(*ucfg.Config) (Generator, error)
+type Factory = func(*ucfg.Config, int64) (Generator, error)
 
 var registry = make(map[string]Factory)
 

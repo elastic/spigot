@@ -174,7 +174,7 @@ func (g *Generator) getTime() time.Time {
 }
 
 // New is the factory for Windows Event XML objects.
-func New(cfg *ucfg.Config) (generator.Generator, error) {
+func New(cfg *ucfg.Config, _ int64) (generator.Generator, error) {
 	c := defaultConfig()
 	if err := cfg.Unpack(&c); err != nil {
 		return nil, err

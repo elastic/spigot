@@ -2,6 +2,7 @@
 // function is run.
 
 //go:build !windows
+
 package include
 
 import (

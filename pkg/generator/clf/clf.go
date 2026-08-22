@@ -2,12 +2,12 @@
 //
 // Configuration:
 //
-//   combined: (bool, optional) If true, generate Combined Log Format records,
-//             which add referer and user-agent fields.
+//	combined: (bool, optional) If true, generate Combined Log Format records,
+//	          which add referer and user-agent fields.
 //
-//   - generator:
-//       type: clf
-//       combined: true
+//	- generator:
+//	    type: clf
+//	    combined: true
 package clf
 
 import (
@@ -99,7 +99,7 @@ func (g *Generator) randomize() {
 }
 
 // New is the factory for Common Log Format objects.
-func New(cfg *ucfg.Config) (generator.Generator, error) {
+func New(cfg *ucfg.Config, _ int64) (generator.Generator, error) {
 	var err error
 
 	c := defaultConfig()

@@ -2,9 +2,9 @@
 //
 // Configuration file supports including timestamps in log messages
 //
-//   generator:
-//     type: gotext
-//     include_timestamp: true
+//	generator:
+//	  type: gotext
+//	  include_timestamp: true
 package gotext
 
 import (
@@ -28,74 +28,64 @@ const Name = "gotext"
 func init() {
 	generator.Register(Name, New)
 }
+
 var (
 	FunctionMap = template.FuncMap{
-		"ToLower": strings.ToLower,
-		"ToUpper": strings.ToUpper,
-		"TimestampFormatter": TimestampFormatter,
+		"ToLower":    strings.ToLower,
+		"ToUpper":    strings.ToUpper,
 		"RandomIPv4": RandomIPv4,
 		"RandomPort": RandomPort,
-		"RandomInt": RandomInt,
-		"Percent": Percent,
-		"PlusInt": PlusInt,
-		"TimesInt": TimesInt,
+		"RandomInt":  RandomInt,
+		"Percent":    Percent,
+		"PlusInt":    PlusInt,
+		"TimesInt":   TimesInt,
 	}
 )
-func TimestampFormatter(format, whence string) string {
-	now := time.Now()
 
-	dur,err := time.ParseDuration(whence)
-	if err != nil {
-		fmt.Println("failed to parse [", whence, "] with error::", err)
-	} else {
-		// now choose a random duration within this value
-		trunc := int(dur.Round(time.Second).Seconds())
-		seconds := 0
-		if trunc > 0 {
-			seconds = rand.Intn(trunc)
-		}
-		newdur, err := time.ParseDuration(fmt.Sprintf("-%ds", seconds))
-		if err != nil {
-			// ignore
-		} else {
-			dur = newdur
-		}
-		now = now.Add(dur)
-	}
-
-	// this format is seconds.[1-9]
-	if strings.HasPrefix(format, "seconds") {
-		secs := now.Unix()
-
-		returnVal := fmt.Sprintf("%d", secs)
-		result := strings.Split(format, ".")
-		if len(result) > 1 {
-			// generate a random number of nanos
-			nanos := rand.Intn(1_000_000_000)
-			partialsString := fmt.Sprintf("%09d", nanos)
-
-			// figure out what precision to output
-			precision := 6
-			if prec, err := strconv.Atoi(result[1]); err == nil {
-				switch prec {
-				case 0:
-					return fmt.Sprintf("%d", secs)
-				case 1, 2, 3, 4, 5, 6, 7, 8, 9:
-					precision = prec
-				default:
-					precision = 9
-				}
-			}
-			returnVal = fmt.Sprintf("%d.%s", secs, partialsString[0:precision])
-		}
-		// return early
-		return returnVal
-	}
-
-	return now.Format(format)
+type TimestampFormatter struct {
+	cur time.Time
 }
 
-func ToInt(input any) int {
+func (tf TimestampFormatter) seconds(precision int) string {
+	var returnVal string
+
+	secs := tf.cur.Unix()
+	returnVal = fmt.Sprintf("%d", secs)
+
+	if precision == 0 {
+		return returnVal
+	} else if precision > 9 {
+		precision = 9
+	}
+
+	nanos := tf.cur.UnixNano() % 1_000_000_000
+	partialsString := fmt.Sprintf("%09d", nanos)
+
+	returnVal = fmt.Sprintf("%d.%s", secs, partialsString[0:precision])
+
+	return returnVal
+}
+
+func (tf TimestampFormatter) Seconds(format any, _ string) string {
+
+	precision := ToIntWithDefault(format, 0)
+	return tf.seconds(precision)
+}
+
+func (tf TimestampFormatter) Seconds3(format, _ string) string {
+	return tf.seconds(3)
+}
+func (tf TimestampFormatter) Seconds6(format, _ string) string {
+	return tf.seconds(6)
+}
+func (tf TimestampFormatter) Seconds9(format, _ string) string {
+	return tf.seconds(9)
+}
+func (tf TimestampFormatter) Format(format, _ string) string {
+	return tf.cur.Format(format)
+}
+
+func ToIntWithDefault(input any, defaultValue int) int {
 
 	if v, ok := input.(int); ok {
 		return v
@@ -104,23 +94,26 @@ func ToInt(input any) int {
 	case string:
 		result, err := strconv.Atoi(v)
 		if err != nil {
-			log.Fatal("Could not convert %v (%T) to int: %v\n", input, input, err)
+			log.Fatalf("Could not convert %v (%T) to int: %v\n", input, input, err)
 			return 1
 		}
 		return result
 	default:
 	}
-	return 1
+	return defaultValue
 
+}
+func ToInt(input any) int {
+	return ToIntWithDefault(input, 1)
 }
 
 func PlusInt(a, b any) string {
 
-	return fmt.Sprintf("%v", ToInt(a) + ToInt(b))
+	return fmt.Sprintf("%v", ToInt(a)+ToInt(b))
 }
 func TimesInt(a, b any) string {
 
-	return fmt.Sprintf("%v", ToInt(a) * ToInt(b))
+	return fmt.Sprintf("%v", ToInt(a)*ToInt(b))
 }
 
 func Percent(numerator, denominator any) string {
@@ -143,7 +136,7 @@ func RandomInt(maximum int) string {
 		randval = rand.Intn(maximum)
 	} else if maximum < 0 {
 		// get a random value
-		randval = -1 * rand.Intn(-1 * maximum)
+		randval = -1 * rand.Intn(-1*maximum)
 	}
 
 	// return the string interpretation of that value
@@ -160,20 +153,21 @@ func RandomPort() string {
 
 type Template struct {
 	Format string
-	Tpl *template.Template
+	Tpl    *template.Template
 }
 
 type Field struct {
-	Name string `config:"name"`
-	Type string `config:"type"`
-	Choices []string `config:"choices"`
+	Name     string   `config:"name"`
+	Type     string   `config:"type"`
+	Choices  []string `config:"choices"`
 	template *Template
 }
 
 type GoText struct {
-	Name string
-	Fields []Field
-	templates []Template
+	Name          string
+	Fields        []Field
+	templates     []Template
+	timeFormatter TimestampFormatter
 }
 
 func (g *GoText) Next() ([]byte, error) {
@@ -181,7 +175,11 @@ func (g *GoText) Next() ([]byte, error) {
 
 	object := make(map[string]any)
 
-	object["Timestamp"] = time.Now()
+	object["Timestamp"] = g.timeFormatter.Format("2006-01-02 15:04:05", "")
+	timeFormatter := TimestampFormatter{cur: g.timeFormatter.cur}
+	g.timeFormatter.cur = g.timeFormatter.cur.Add(time.Millisecond * 10)
+
+	object["TimestampFormatter"] = &timeFormatter
 
 	// loop over each field
 	for _, f := range g.Fields {
@@ -191,7 +189,7 @@ func (g *GoText) Next() ([]byte, error) {
 	// are there formats?
 	if len(g.templates) < 1 {
 		fmt.Printf("i am %v; %v\n", g.Name, g.templates)
-		return nil, fmt.Errorf("This has no templates to process; bailing")
+		return nil, fmt.Errorf("this has no templates to process; bailing")
 	}
 	index := rand.Intn(len(g.templates))
 
@@ -206,7 +204,7 @@ func (g *GoText) Next() ([]byte, error) {
 }
 
 // New is Factory for the gotext generator
-func New(cfg *ucfg.Config) (generator.Generator, error) {
+func New(cfg *ucfg.Config, numRecords int64) (generator.Generator, error) {
 	c := defaultConfig()
 	if err := cfg.Unpack(&c); err != nil {
 		return nil, err
@@ -214,18 +212,23 @@ func New(cfg *ucfg.Config) (generator.Generator, error) {
 
 	gotextConfig := c.Config
 
+	startTime := time.Now().Add(-time.Duration(numRecords) * 10 * time.Millisecond)
+
+	timeFormatter := TimestampFormatter{cur: startTime}
+
 	// check variables
 	// return
 	g := &GoText{
-		Name: gotextConfig.Name,
-		Fields: nil,
-		templates: nil,
+		Name:          gotextConfig.Name,
+		Fields:        nil,
+		templates:     nil,
+		timeFormatter: timeFormatter,
 	}
 
 	for i, v := range gotextConfig.Fields {
 		f := Field{
-			Name: v.Name,
-			Type: v.Type,
+			Name:    v.Name,
+			Type:    v.Type,
 			Choices: v.Choices,
 		}
 
@@ -238,7 +241,7 @@ func New(cfg *ucfg.Config) (generator.Generator, error) {
 
 			f.template = &Template{
 				Format: *v.Template,
-				Tpl: t,
+				Tpl:    t,
 			}
 		}
 		g.Fields = append(g.Fields, f)
@@ -251,10 +254,9 @@ func New(cfg *ucfg.Config) (generator.Generator, error) {
 		}
 		g.templates = append(g.templates, Template{
 			Format: *v,
-			Tpl: t,
+			Tpl:    t,
 		})
 	}
 
 	return g, nil
 }
-

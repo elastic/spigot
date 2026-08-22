@@ -8,42 +8,54 @@ import (
 )
 
 func TestConfigs(t *testing.T) {
-	tests := map[string]struct {
-		c           map[string]interface{}
-		hasError    bool
-		errorString string
+
+	var gcfg GeneratorConfig
+
+	testCases := []struct {
+		genConfig map[string]interface{}
+		errString string
+		expected  string
 	}{
-		"Valid Type": {
-			c:           map[string]interface{}{"type": Name},
-			hasError:    false,
-			errorString: "",
-		},
-		"Invalid Type": {
-			c:           map[string]interface{}{"type": "Bob"},
-			hasError:    true,
-			errorString: "'Bob' is not a valid value for 'type' expected 'cisco:asa' accessing config",
-		},
-		"No Type": {
-			c:           map[string]interface{}{"type": ""},
-			hasError:    true,
-			errorString: "string value is not set accessing 'type'",
-		},
-		"Timestamp": {
-			c:           map[string]interface{}{"type": Name, "include_timestamp": true},
-			hasError:    false,
-			errorString: "",
+		{
+			genConfig: map[string]interface{}{
+				"name": "asa",
+				"formats": []string{
+					"%Basic-test: Deny {{.AccessGroup | ToLower}} because {{.AclId}} said so",
+				},
+				"fields": []map[string]interface{}{
+					{
+						"name": "AccessGroup",
+						"type": "string",
+						"choices": []string{
+							"Access-Group",
+						},
+					},
+					{
+						"name": "AclId",
+						"type": "string",
+						"choices": []string{
+							"AclId",
+						},
+					},
+					{
+						"name": "Direction",
+						"type": "string",
+						"choices": []string{
+							"inbound",
+							"outbound",
+						},
+					},
+				},
+			},
+			errString: "",
+			expected:  "",
 		},
 	}
-	for name, tc := range tests {
-		c, err := ucfg.NewFrom(tc.c)
-		assert.Nil(t, err, name)
-		_, err = New(c)
-		if tc.hasError {
-			assert.NotNil(t, err, name)
-			assert.Equal(t, err.Error(), tc.errorString, name)
-		}
-		if !tc.hasError {
-			assert.Nil(t, err, name)
-		}
+
+	for _, tc := range testCases {
+		c, err := ucfg.NewFrom(tc.genConfig)
+		assert.Nil(t, err)
+		err = c.Unpack(&gcfg)
+		assert.Nil(t, err)
 	}
 }

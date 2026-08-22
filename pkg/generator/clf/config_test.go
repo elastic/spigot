@@ -37,7 +37,7 @@ func TestConfigs(t *testing.T) {
 			cfg, err := ucfg.NewFrom(tc.config)
 			assert.NoError(t, err)
 
-			_, err = New(cfg)
+			_, err = New(cfg, 0)
 			if tc.hasError {
 				assert.Error(t, err)
 				assert.Equal(t, err.Error(), tc.errorString)

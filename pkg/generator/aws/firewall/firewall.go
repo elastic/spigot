@@ -3,12 +3,12 @@
 //
 // Configuration:
 //
-//	 event_type: Specify the type of event to generate, or leave blank for random.
-//	             Valid values are: alert, netflow.
+//		 event_type: Specify the type of event to generate, or leave blank for random.
+//		             Valid values are: alert, netflow.
 //
-//   - generator:
-//       type: aws:firewall
-//	     event_type: netflow
+//	  - generator:
+//	      type: aws:firewall
+//		     event_type: netflow
 package firewall
 
 import (
@@ -129,7 +129,7 @@ func init() {
 }
 
 // New is the factory for AWS Firewall objects.
-func New(cfg *ucfg.Config) (generator.Generator, error) {
+func New(cfg *ucfg.Config, _ int64) (generator.Generator, error) {
 	c := defaultConfig()
 	if err := cfg.Unpack(&c); err != nil {
 		return nil, err

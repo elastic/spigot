@@ -32,7 +32,7 @@ func TestConfigs(t *testing.T) {
 	for name, tc := range tests {
 		c, err := ucfg.NewFrom(tc.c)
 		assert.Nil(t, err, name)
-		_, err = New(c)
+		_, err = New(c, 0)
 		if tc.hasError {
 			assert.NotNil(t, err, name)
 			assert.Equal(t, err.Error(), tc.errorString, name)

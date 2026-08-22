@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"reflect"
 
 	"strconv"
 
@@ -13,26 +12,26 @@ import (
 )
 
 type config struct {
-	Type string `config:"type" validate:"required"`
+	Type   string          `config:"type" validate:"required"`
 	Config GeneratorConfig `config:"config" validate:"required"`
 }
 
 type GcField struct {
-	Name string `config:"name"`
-	Type string `config:"type"`
-	Choices []string `config:"choices"`
-	Template *string `config:"tpl"`
+	Name     string   `config:"name"`
+	Type     string   `config:"type"`
+	Choices  []string `config:"choices"`
+	Template *string  `config:"tpl"`
 }
 
 type GeneratorConfig struct {
-	Name string `config:"name" validate:"required"`
+	Name    string    `config:"name" validate:"required"`
 	Formats []*string `config:"formats"`
-	Fields []GcField `config:"fields"`
+	Fields  []GcField `config:"fields"`
 }
 
 func defaultConfig() config {
 	return config{
-		Type: Name,
+		Type:   Name,
 		Config: GeneratorConfig{},
 	}
 }
@@ -45,38 +44,20 @@ func (c *config) Validate() error {
 	return nil
 }
 
-func (f *Field) getType() reflect.Type {
-	switch f.Type {
-	case "Port", "port":
-		var p int
-		return reflect.TypeOf(p)
-	// case "time.Time":
-	// 	return string
-	// case "Duration", "duration":
-	// 	return string
-	default:
-	}
-
-	// otherwise, return the type as a string
-	var p string
-	return reflect.TypeOf(p)
-
-}
-
 func (f *Field) convert(in bytes.Buffer) any {
 
 	switch f.Type {
 	case "Port", "port", "int":
-		asString := string(in.Bytes())
+		asString := in.String()
 		asInt, err := strconv.Atoi(asString)
 		if err != nil {
-			log.Fatal("Could not convert %v to int: %v\n", in, err)
+			log.Fatalf("Could not convert %v to int: %v\n", in, err)
 			return nil
 		}
 		return asInt
 	default:
 	}
-	return string(in.Bytes())
+	return in.String()
 }
 
 func (f *Field) randomize(object map[string]any) any {

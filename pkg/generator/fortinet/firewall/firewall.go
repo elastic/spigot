@@ -3,7 +3,7 @@
 // For the configuration file there are no options so only the following is needed:
 //
 //   - generator:
-//       type: "fortinet:firewall"
+//     type: "fortinet:firewall"
 package firewall
 
 import (
@@ -83,7 +83,7 @@ func init() {
 }
 
 // New is the Factory for Firewall objects.
-func New(cfg *ucfg.Config) (generator.Generator, error) {
+func New(cfg *ucfg.Config, _ int64) (generator.Generator, error) {
 	c := defaultConfig()
 	if err := cfg.Unpack(&c); err != nil {
 		return nil, err

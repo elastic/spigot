@@ -76,7 +76,7 @@ func New(cfg *ucfg.Config) (Runner, error) {
 
 	r.output = o
 
-	g, err := generator.New(c.Generator)
+	g, err := generator.New(c.Generator, int64(c.Records))
 	if err != nil {
 		return r, err
 	}

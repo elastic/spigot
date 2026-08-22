@@ -32,7 +32,7 @@ func TestGenerator_Next(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			rand.Seed(1)
 
-			g, err := New(ucfg.MustNewFrom(tc.config))
+			g, err := New(ucfg.MustNewFrom(tc.config), 0)
 			assert.NoError(t, err)
 
 			g.(*Generator).staticTime = &testTime

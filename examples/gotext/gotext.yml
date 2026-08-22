@@ -2,10 +2,10 @@
 x-extra: &gotext
   name: "asa"
   formats:
-    - "{{if .IncludeTimestamp}}{{TimestampFormatter \"Jan 02 2006 03:04:05\" .RewindValue}}: {{end}}%ASA-4-106023: Deny {{.Protocol | ToLower}} src {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} dst {{.DstInt}}:{{.DstAddr}}/{{.DstPort}} type {{RandomInt 64}} code {{RandomInt 64}} by {{.AccessGroup | ToLower}} \"{{.AclId}}\" [0x8ed66b60, 0xf8852875]"
-    - "{{if .IncludeTimestamp}}{{TimestampFormatter \"Jan 02 2006 03:04:05\" .RewindValue}}: {{end}}%ASA-6-302013: Built {{.Direction}} TCP connection {{.ConnectionId}} for {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} ({{.Map1Addr}}/{{.Map1Port}}) to {{.DstInt}}:{{.DstAddr}}/{{.DstPort}} ({{.Map2Addr}}/{{.Map2Port}})"
-    - "{{if .IncludeTimestamp}}{{TimestampFormatter \"Jan 02 2006 03:04:05\" .RewindValue}}: {{end}}%ASA-6-302014: Teardown TCP connection {{.ConnectionId}} for {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} to {{.DstInt}}:{{.DstAddr}}/{{.DstPort}} duration {{.Duration}} bytes {{RandomInt 65536}} {{.Reason}}"
-    - "{{if .IncludeTimestamp}}{{TimestampFormatter \"Jan 02 2006 03:04:05.999\" .RewindValue}}: {{end}}%ASA-6-305011: Built {{.TranslationType}} {{.Protocol}} translation from {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} to {{.DstInt}}:{{.DstAddr}}/{{.DstPort}}"
+    - "{{if .IncludeTimestamp}}{{.TimestampFormatter.Format \"Jan 02 2006 03:04:05\" .RewindValue}}: {{end}}%ASA-4-106023: Deny {{.Protocol | ToLower}} src {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} dst {{.DstInt}}:{{.DstAddr}}/{{.DstPort}} type {{RandomInt 64}} code {{RandomInt 64}} by {{.AccessGroup | ToLower}} \"{{.AclId}}\" [0x8ed66b60, 0xf8852875]"
+    - "{{if .IncludeTimestamp}}{{.TimestampFormatter.Format \"Jan 02 2006 03:04:05\" .RewindValue}}: {{end}}%ASA-6-302013: Built {{.Direction}} TCP connection {{.ConnectionId}} for {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} ({{.Map1Addr}}/{{.Map1Port}}) to {{.DstInt}}:{{.DstAddr}}/{{.DstPort}} ({{.Map2Addr}}/{{.Map2Port}})"
+    - "{{if .IncludeTimestamp}}{{.TimestampFormatter.Format \"Jan 02 2006 03:04:05\" .RewindValue}}: {{end}}%ASA-6-302014: Teardown TCP connection {{.ConnectionId}} for {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} to {{.DstInt}}:{{.DstAddr}}/{{.DstPort}} duration {{.Duration}} bytes {{RandomInt 65536}} {{.Reason}}"
+    - "{{if .IncludeTimestamp}}{{.TimestampFormatter.Format \"Jan 02 2006 03:04:05.999\" .RewindValue}}: {{end}}%ASA-6-305011: Built {{.TranslationType}} {{.Protocol}} translation from {{.SrcInt}}:{{.SrcAddr}}/{{.SrcPort}} to {{.DstInt}}:{{.DstAddr}}/{{.DstPort}}"
 
   fields:
     - name: AccessGroup

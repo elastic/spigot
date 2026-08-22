@@ -14,6 +14,7 @@
 //	  port: 1234
 
 //go:build !windows
+
 package syslog
 
 import (

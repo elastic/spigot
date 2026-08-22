@@ -31,7 +31,7 @@ type config struct {
 // New creates a new instance of the generator that is specified by
 // the "type" in the ucfg.Config that is passed in.  If no matching
 // generator is found for that type than an error is returned.
-func New(cfg *ucfg.Config) (Generator, error) {
+func New(cfg *ucfg.Config, numRecords int64) (Generator, error) {
 	c := config{}
 	err := cfg.Unpack(&c)
 	if err != nil {
@@ -41,5 +41,5 @@ func New(cfg *ucfg.Config) (Generator, error) {
 	if err != nil {
 		return nil, err
 	}
-	return factory(cfg)
+	return factory(cfg, numRecords)
 }

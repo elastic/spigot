@@ -74,7 +74,7 @@ func TestNext(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			rand.Seed(1)
 			var got Firewall
-			g, err := New(ucfg.MustNewFrom(tc.config))
+			g, err := New(ucfg.MustNewFrom(tc.config), 0)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -102,7 +102,7 @@ func BenchmarkGenerator_Next(b *testing.B) {
 	b.ReportAllocs()
 
 	rand.Seed(1)
-	g, err := New(ucfg.New())
+	g, err := New(ucfg.New(), 0)
 	if err != nil {
 		b.Fatal(err)
 	}

@@ -1,7 +1,7 @@
 // Package cef implements the generator for Citrix CEF logs.
 //
-//   generator:
-//     type: citrix:cef
+//	generator:
+//	  type: citrix:cef
 package cef
 
 import (
@@ -145,7 +145,7 @@ func init() {
 }
 
 // New returns a new Citrix CEF log line generator.
-func New(cfg *ucfg.Config) (generator.Generator, error) {
+func New(cfg *ucfg.Config, _ int64) (generator.Generator, error) {
 	def := defaultConfig()
 	if err := cfg.Unpack(&def); err != nil {
 		return nil, err
