@@ -15,6 +15,5 @@ import (
 	_ "github.com/elastic/spigot/pkg/output/file"
 	_ "github.com/elastic/spigot/pkg/output/rally"
 	_ "github.com/elastic/spigot/pkg/output/s3"
-	_ "github.com/elastic/spigot/pkg/output/shipper"
 	_ "github.com/elastic/spigot/pkg/output/simulate"
 )
